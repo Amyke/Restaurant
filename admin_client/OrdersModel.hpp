@@ -20,7 +20,7 @@ public:
 
     void setArrivedOrders(const std::vector<Orders> &order);
 
-    void setStatus(std::uint64_t orderId, OrderStatus status);
+    void setStatus(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
 
 private:
     QString orderStatusToString(OrderStatus status) const;

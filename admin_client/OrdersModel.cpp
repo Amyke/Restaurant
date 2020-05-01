@@ -72,7 +72,7 @@ void OrdersModel::setArrivedOrders(const std::vector<Orders> &order) {
     endResetModel();
 }
 
-void OrdersModel::setStatus(std::uint64_t orderId, OrderStatus status) {
+void OrdersModel::setStatus(std::uint64_t orderId, OrderStatus status, std::uint64_t date) {
     // invariant: orders_ is sorted by id
 
     auto it = std::find_if(orders_.begin(), orders_.end(), [orderId](const Orders &order) { return order.OrderId == orderId; });
@@ -81,6 +81,7 @@ void OrdersModel::setStatus(std::uint64_t orderId, OrderStatus status) {
     }
 
     it->Status = status;
+    it->OrderedDate = date;
     auto row = std::distance(orders_.begin(), it);
     dataChanged(index(row, 2), index(row, 2));
 }

@@ -44,8 +44,8 @@ signals:
 
     void newOrderArrived(const std::vector<Orders> &value);
 
-    void orderStatusChangeSucceded(std::uint64_t orderId, OrderStatus status);
-    void orderStatusChangeFailed(std::uint64_t orderId, OrderStatus status);
+    void orderStatusChangeSucceded(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
+    void orderStatusChangeFailed(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
 
     void foodListRefreshed(const std::vector<Food> &value);
     void foodChangeSucceded();

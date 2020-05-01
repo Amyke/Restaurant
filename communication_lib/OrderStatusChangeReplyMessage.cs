@@ -18,10 +18,13 @@ namespace communication_lib
         public MessageId Id => MessageId.OrderStatusChangeReply;
 
         [Key(0)]
-        public UInt64 OrderId;
+        public UInt64 OrderId { get; set; }
         [Key(1)]
-        public ReplyStatus Status;
+        public ReplyStatus Status { get; set; }
         [Key(2)]
-        public OrderStatus NewStatus;
+        public OrderStatus NewStatus { get; set; }
+
+        [Key(3)]
+        public UInt64 Date { get; set; }
     }
 }

@@ -68,7 +68,7 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     });
 
     connect(&model, &Model::orderStatusChangeSucceded, this,
-            [this](std::uint64_t orderId, OrderStatus status) { ordersModel_->setStatus(orderId, status); });
+            [this](std::uint64_t orderId, OrderStatus status, std::uint64_t date) { ordersModel_->setStatus(orderId, status, date); });
 
     connect(&model, &Model::foodListRefreshed, this, [this, administrationView](const std::vector<Food> &foodList) {
         administrationView->setFoodList(foodList);

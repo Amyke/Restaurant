@@ -271,8 +271,8 @@ struct OrderStatusChangeRequestMessage final : Message {
 struct OrderStatusChangeReplyMessage final : Message {
     OrderStatusChangeReplyMessage() = default;
 
-    OrderStatusChangeReplyMessage(std::uint64_t orderId, ReplyStatus status, OrderStatus newStatus)
-        : OrderId(orderId), Status(status), NewStatus(newStatus) {
+    OrderStatusChangeReplyMessage(std::uint64_t orderId, ReplyStatus status, OrderStatus newStatus, std::uint64_t date)
+        : OrderId(orderId), Status(status), NewStatus(newStatus), Date(date) {
     }
     MessageId id() const final {
         return MessageId::OrderStatusChangeReply;
@@ -281,8 +281,9 @@ struct OrderStatusChangeReplyMessage final : Message {
     std::uint64_t OrderId;
     ReplyStatus Status;
     OrderStatus NewStatus;
+    std::uint64_t Date;
 
-    MSGPACK_DEFINE(OrderId, Status, NewStatus);
+    MSGPACK_DEFINE(OrderId, Status, NewStatus, Date);
 };
 
 struct NotificationOrdersMessage final : Message {

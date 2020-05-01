@@ -170,10 +170,10 @@ void Model::handleOrderStatusChangeReply(const OrderStatusChangeReplyMessage &st
 
     switch (status.Status) {
     case ReplyStatus::Success:
-        orderStatusChangeSucceded(status.OrderId, status.NewStatus);
+        orderStatusChangeSucceded(status.OrderId, status.NewStatus, status.Date);
         break;
     case ReplyStatus::Failed:
-        orderStatusChangeFailed(status.OrderId, status.NewStatus);
+        orderStatusChangeFailed(status.OrderId, status.NewStatus, status.Date);
         break;
     }
 }
