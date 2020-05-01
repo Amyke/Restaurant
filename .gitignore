@@ -1,0 +1,10 @@
+_build/
+Testing/
+server/bin/
+server/obj/
+communication_lib/bin/
+communication_lib/obj/
+communication_lib.test/bin/
+communication_lib.test/obj/
+communication_lib.IntegrationTest/obj/
+communication_lib.IntegrationTest/bin/
