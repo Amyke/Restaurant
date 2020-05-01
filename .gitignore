@@ -8,3 +8,4 @@ communication_lib.test/bin/
 communication_lib.test/obj/
 communication_lib.IntegrationTest/obj/
 communication_lib.IntegrationTest/bin/
+_install/
