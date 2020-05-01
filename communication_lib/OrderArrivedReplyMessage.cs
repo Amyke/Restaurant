@@ -6,12 +6,12 @@ using System.Text;
 namespace communication_lib
 {
     [MessagePackObject]
-    public sealed class NotificationOrdersMessage : Message
+    public sealed class OrderArrivedReplyMessage : Message
     {
         [IgnoreMember]
-        public MessageId Id => MessageId.NotificationOrders;
+        public MessageId Id => MessageId.OrderArrivedReply;
 
         [Key(0)]
-        public Orders Order { get; set; } = new Orders();
+        public List<Orders> Orders { get; set; } = new List<Orders>();
     }
 }

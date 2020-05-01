@@ -15,11 +15,13 @@ namespace communication_lib
         OrderReply,
         PayRequest,
         PayReply,
+        OrderArrivedRequest,
+        OrderArrivedReply,
+        NotificationOrders,
         ComplateFoodRequest,
         ComplateFoodReply,
         FoodChangeRequest,
         FoodChangeReply,
-        NotificationOrders,
         OrderStatusChangeRequest,
         OrderStatusChangeReply
     }

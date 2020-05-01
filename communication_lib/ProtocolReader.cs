@@ -49,6 +49,8 @@ namespace communication_lib
                 MessageId.PayReply => MessagePackSerializer.Deserialize<PayReplyMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.FoodChangeRequest => MessagePackSerializer.Deserialize<FoodChangeRequestMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.FoodChangeReply => MessagePackSerializer.Deserialize<FoodChangeReplyMessage>(buffer, cancellationToken: cancellationToken),
+                MessageId.OrderArrivedRequest => MessagePackSerializer.Deserialize<OrderArrivedRequestMessage>(buffer, cancellationToken: cancellationToken),
+                MessageId.OrderArrivedReply => MessagePackSerializer.Deserialize<OrderArrivedReplyMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.NotificationOrders => MessagePackSerializer.Deserialize<NotificationOrdersMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.ComplateFoodRequest => MessagePackSerializer.Deserialize<ComplateFoodRequestMesage>(buffer, cancellationToken: cancellationToken),
                 MessageId.ComplateFoodReply => MessagePackSerializer.Deserialize< ComplateFoodReplyMesage>(buffer, cancellationToken: cancellationToken),

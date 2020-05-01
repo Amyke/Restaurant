@@ -32,7 +32,9 @@ public:
     void connectToServer(const QString &host, quint32 port);
     void login(const QString &username, const QString &password);
 
-    void complateListFoodRequest();
+    void ordersListRequest(std::uint64_t fromDate, std::uint64_t toDate);
+
+    void complateListRequest();
     void foodChangeRequest(const Delta &delta);
 
     void orderStatusChangeRequest(std::uint64_t orderId, OrderStatus status);
@@ -42,7 +44,9 @@ signals:
     void loginSucceded();
     void loginFailed();
 
-    void newOrderArrived(const std::vector<Orders> &value);
+    void orderListArrived(const std::vector<Orders> &value);
+
+    void newOrderArrived(const Orders &value);
 
     void orderStatusChangeSucceded(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
     void orderStatusChangeFailed(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
@@ -60,6 +64,8 @@ private:
 
     void handleMessageArrived(QSharedPointer<Message> msg);
     void handleLoginReply(const LoginReplyMessage &msg);
+    
+    void handleOrderListReply(const OrderArrivedReplyMessage &msg);
 
     void handleListFoodReply(const ComplateFoodReplyMesage &msg);
     void handleFoodChangeReply(const FoodChangeReplyMessage &msg);
@@ -74,7 +80,6 @@ private:
     bool connected_ = false;
     State actualState = State::WaitingForLogin;
     std::vector<Food> availableFoods_;
-    std::vector<Orders> requestedOrders_;
 };
 
 #endif //! MODEL_HPP

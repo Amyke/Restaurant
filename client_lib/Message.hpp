@@ -14,11 +14,13 @@ enum class MessageId : std::uint32_t {
     OrderReply,
     PayRequest,
     PayReply,
+    OrderArrivedRequest,
+    OrderArrivedReply,
+    NotificationOrders,
     ComplateFoodRequest,
     ComplateFoodReply,
     FoodChangeRequest,
     FoodChangeReply,
-    NotificationOrders,
     OrderStatusChangeRequest,
     OrderStatusChangeReply
 };
@@ -284,6 +286,37 @@ struct OrderStatusChangeReplyMessage final : Message {
     std::uint64_t Date;
 
     MSGPACK_DEFINE(OrderId, Status, NewStatus, Date);
+};
+
+struct OrderArrivedRequestMessage final : Message {
+    OrderArrivedRequestMessage() = default;
+
+    OrderArrivedRequestMessage(std::uint64_t fromDate, std::uint64_t toDate) : FromDate(fromDate), ToDate(toDate){
+    }
+
+    MessageId id() const final {
+        return MessageId::OrderArrivedRequest;
+    }
+
+    std::uint64_t FromDate;
+    std::uint64_t ToDate;
+
+    MSGPACK_DEFINE(FromDate, ToDate);
+};
+
+struct OrderArrivedReplyMessage final : Message {
+    OrderArrivedReplyMessage() = default;
+
+    OrderArrivedReplyMessage(std::vector<Orders> orders) : Orders(orders) {
+    }
+
+    MessageId id() const final {
+        return MessageId::OrderArrivedReply;
+    }
+
+    std::vector<Orders> Orders;
+
+    MSGPACK_DEFINE(Orders)
 };
 
 struct NotificationOrdersMessage final : Message {

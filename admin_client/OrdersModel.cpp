@@ -66,16 +66,38 @@ QVariant OrdersModel::data(const QModelIndex &index, int role) const {
     return {};
 }
 
-void OrdersModel::setArrivedOrders(const std::vector<Orders> &order) {
+void OrdersModel::addOrders(const std::vector<Orders> &order) {
     beginResetModel();
-    orders_ = order;
+
+    std::vector<Orders> toBeInserted;
+    auto newIt = order.begin();
+    for (auto originalIt = orders_.begin(); originalIt != orders_.end() && newIt != order.end();) {
+
+        if (originalIt->OrderId == newIt->OrderId) {
+            *originalIt = *newIt;
+            ++originalIt, ++newIt;
+        } else if (originalIt->OrderId < newIt->OrderId) {
+            ++originalIt;
+        } else if (originalIt->OrderId > newIt->OrderId) {
+            toBeInserted.push_back(*newIt);
+            ++newIt;
+        }
+    }
+
+    orders_.insert(orders_.end(), newIt, order.end());
+    orders_.insert(orders_.end(), toBeInserted.begin(), toBeInserted.end());
+
+    std::sort(orders_.begin(), orders_.end(),
+              [](const Orders &left, const Orders &right) { return left.OrderId < right.OrderId; });
+
     endResetModel();
 }
 
 void OrdersModel::setStatus(std::uint64_t orderId, OrderStatus status, std::uint64_t date) {
     // invariant: orders_ is sorted by id
 
-    auto it = std::find_if(orders_.begin(), orders_.end(), [orderId](const Orders &order) { return order.OrderId == orderId; });
+    auto it = std::find_if(orders_.begin(), orders_.end(),
+                           [orderId](const Orders &order) { return order.OrderId == orderId; });
     if (it == orders_.end()) {
         return;
     }

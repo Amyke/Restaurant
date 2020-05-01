@@ -31,6 +31,10 @@ QSharedPointer<Message> decodeMessage(MessageId type, const msgpack::object &obj
         return msgpackDeserializePtr<FoodChangeRequestMessage>(obj);
     case MessageId::FoodChangeReply:
         return msgpackDeserializePtr<FoodChangeReplyMessage>(obj);
+    case MessageId::OrderArrivedRequest:
+        return msgpackDeserializePtr<OrderArrivedRequestMessage>(obj);
+    case MessageId::OrderArrivedReply:
+        return msgpackDeserializePtr<OrderArrivedReplyMessage>(obj);
     case MessageId::NotificationOrders:
         return msgpackDeserializePtr<NotificationOrdersMessage>(obj);
     case MessageId::ComplateFoodRequest:

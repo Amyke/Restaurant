@@ -18,7 +18,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    void setArrivedOrders(const std::vector<Orders> &order);
+    void addOrders(const std::vector<Orders> &order);
 
     void setStatus(std::uint64_t orderId, OrderStatus status, std::uint64_t date);
 

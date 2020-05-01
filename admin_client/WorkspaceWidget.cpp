@@ -1,6 +1,7 @@
 #include "WorkspaceWidget.hpp"
 
 #include <QDataWidgetMapper>
+#include <QtCore/QDateTime>
 #include <QtCore/QSortFilterProxyModel>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStackedWidget>
@@ -36,10 +37,20 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     addWidget(orderListView);
     addWidget(toolbox_);
 
-    connect(&model, &Model::loginSucceded, this, [this, &model] { model.complateListFoodRequest(); });
+    connect(&model, &Model::loginSucceded, this, [this, &model] { model.complateListRequest(); });
+
+    connect(&model, &Model::loginSucceded, this, [this, &model] {
+        auto now = QDateTime::currentDateTime();
+        auto oneWeekAgo = now.addDays(-7);
+        model.ordersListRequest(oneWeekAgo.toTime_t(), now.toTime_t());
+    });
+
+    connect(&model, &Model::orderListArrived, this,
+            [this](const std::vector<Orders> &value) { ordersModel_->addOrders(value);
+    });
 
     connect(&model, &Model::newOrderArrived, this,
-            [this, orderListView](const std::vector<Orders> &value) { ordersModel_->setArrivedOrders(value); });
+            [this](const Orders &value) { ordersModel_->addOrders({value}); });
 
     connect(orderListView->selectionModel(), &QItemSelectionModel::currentRowChanged, mapper,
             [mapper](const QModelIndex &current, const auto &) {
@@ -68,7 +79,9 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     });
 
     connect(&model, &Model::orderStatusChangeSucceded, this,
-            [this](std::uint64_t orderId, OrderStatus status, std::uint64_t date) { ordersModel_->setStatus(orderId, status, date); });
+            [this](std::uint64_t orderId, OrderStatus status, std::uint64_t date) {
+                ordersModel_->setStatus(orderId, status, date);
+            });
 
     connect(&model, &Model::foodListRefreshed, this, [this, administrationView](const std::vector<Food> &foodList) {
         administrationView->setFoodList(foodList);
@@ -81,7 +94,7 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     connect(&model, &Model::foodChangeSucceded, this, [this, &model, administrationView] {
         QMessageBox::information(administrationView, tr("Food change success"),
                                  tr("the table is going to be refreshed"), QMessageBox::StandardButton::Ok);
-        model.complateListFoodRequest();
+        model.complateListRequest();
     });
 
     connect(&model, &Model::foodChangeFailed, this, [this] {

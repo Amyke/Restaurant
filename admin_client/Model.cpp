@@ -20,6 +20,8 @@ QDebug &operator<<(QDebug &os, MessageId id) {
         return os << "FoodChangeRequestMessage";
     case MessageId::OrderStatusChangeRequest:
         return os << "OrderStatusChangeRequestMessage";
+    case MessageId::OrderArrivedRequest:
+        return os << "OrderedArrivedRequestMessage";
     }
 
     return os << "<INVALID>";
@@ -59,7 +61,23 @@ void Model::login(const QString &username, const QString &password) {
     client->send(msg);
 }
 
-void Model::complateListFoodRequest() {
+void Model::ordersListRequest(std::uint64_t fromDate, std::uint64_t toDate) {
+    if (!connected_) {
+        qWarning() << __FUNCTION__ << "called while the connection is not alive!";
+        return;
+    }
+
+    if (actualState != State::Working) {
+        qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
+        return;
+    }
+
+    auto msg = QSharedPointer<OrderArrivedRequestMessage>::create(fromDate, toDate);
+    client->send(msg);
+
+}
+
+void Model::complateListRequest() {
     if (!connected_) {
         qWarning() << __FUNCTION__ << "called while the connection is not alive!";
         return;
@@ -115,6 +133,8 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::FoodChangeReply:
         handleFoodChangeReply(static_cast<const FoodChangeReplyMessage &>(*msg));
         break;
+    case MessageId::OrderArrivedReply:
+        handleOrderListReply(static_cast<const OrderArrivedReplyMessage &>(*msg));
     case MessageId::NotificationOrders:
         handleNotificationOrders(static_cast<const NotificationOrdersMessage &>(*msg));
         break;
@@ -125,6 +145,7 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::OrderReply:
     case MessageId::PayReply:
     case MessageId::LoginRequest:
+    case MessageId::OrderArrivedRequest:
     case MessageId::FoodListRequest:
     case MessageId::OrderRequest:
     case MessageId::PayRequest:
@@ -153,13 +174,22 @@ void Model::handleLoginReply(const LoginReplyMessage &msg) {
     }
 }
 
+void Model::handleOrderListReply(const OrderArrivedReplyMessage &msg) {
+    if (actualState != State::Working) {
+        qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
+        return;
+    }
+
+    orderListArrived(msg.Orders);
+}
+
+
 void Model::handleNotificationOrders(const NotificationOrdersMessage &msg) {
     if (actualState != State::Working) {
         qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
         return;
     }
-    requestedOrders_.push_back(msg.Order);
-    newOrderArrived(requestedOrders_);
+    newOrderArrived(msg.Order);
 }
 
 void Model::handleOrderStatusChangeReply(const OrderStatusChangeReplyMessage &status) {
