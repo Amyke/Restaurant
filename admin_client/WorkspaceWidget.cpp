@@ -48,21 +48,21 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
             });
 
     connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [this, orderListView, &model] {
-        auto actualIndex = orderListView->selectionModel()->currentIndex();
-        auto orderId = actualIndex.data(Qt::UserRole).value<Orders>().OrderId;
+        auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
+        auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::InProgress;
         model.orderStatusChangeRequest(orderId, status);
     });
 
     connect(orderDetailsView, &OrderDetailsWidget::complated, this, [this, orderListView, &model] {
-        auto actualIndex = orderListView->selectionModel()->currentIndex();
-        auto orderId = actualIndex.data(Qt::UserRole).value<Orders>().OrderId;
+        auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
+        auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::Complated;
         model.orderStatusChangeRequest(orderId, status);
     });
     connect(orderDetailsView, &OrderDetailsWidget::payed, this, [this, orderListView, &model] {
-        auto actualIndex = orderListView->selectionModel()->currentIndex();
-        auto orderId = actualIndex.data(Qt::UserRole).value<Orders>().OrderId;
+        auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
+        auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::Payed;
         model.orderStatusChangeRequest(orderId, status);
     });
