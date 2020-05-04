@@ -18,7 +18,7 @@ public:
 
 signals:
     void inProgress();
-    void complated();
+    void completed();
     void payed();
 
 private:

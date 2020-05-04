@@ -21,18 +21,39 @@ add_compile_definitions(
 )
 
 enable_testing()
+function(add_qt_test _name _source)
+  add_executable(${_name})
+  target_sources(${_name} PRIVATE ${_source})
+  target_link_libraries(${_name} PRIVATE Qt5::Test)
+  set_target_properties(${_name} PROPERTIES
+    AUTOMOC ON
+    VS_DEBUGGER_ENVIRONMENT "Path=$(Path)\;${Qt5_DIR}/../../../bin"
+  )
+
+  add_test(
+    NAME ${_name}
+    COMMAND ${_name}
+  )
+  set_tests_properties(${_name} PROPERTIES
+    ENVIRONMENT "PATH=${Qt5_DIR}/../../../bin\;$ENV{PATH}"
+  )
+endfunction()
 
 if(CMAKE_GENERATOR MATCHES "^Visual Studio .*$")
   add_subdirectory(communication_lib)
-  add_subdirectory(server)
   add_subdirectory(communication_lib.test)
   add_subdirectory(communication_lib.IntegrationTest)
+
+  add_subdirectory(server)
 endif()
 
 add_subdirectory(client_lib)
 add_subdirectory(client_lib.test)
+
 add_subdirectory(restaurant-app)
 add_subdirectory(restaurant-app.test)
+
 add_subdirectory(admin_client)
+add_subdirectory(admin_client.test)
 
 feature_summary(WHAT ALL)

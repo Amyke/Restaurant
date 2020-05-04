@@ -14,8 +14,8 @@ QDebug &operator<<(QDebug &os, MessageId id) {
     switch (id) {
     case MessageId::LoginRequest:
         return os << "LoginRequestMessage";
-    case MessageId::ComplateFoodRequest:
-        return os << "ComplateFoodRequestMessage";  
+    case MessageId::CompleteFoodRequest:
+        return os << "CompleteFoodRequestMessage";  
     case MessageId::FoodChangeRequest:
         return os << "FoodChangeRequestMessage";
     case MessageId::OrderStatusChangeRequest:
@@ -28,6 +28,8 @@ QDebug &operator<<(QDebug &os, MessageId id) {
 }
 
 Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client) {
+    qRegisterMetaType<std::uint64_t>();
+
     connect(client, &IClient::messageArrived, this, &Model::handleMessageArrived);
     connect(client, &IClient::connectionEstablished, this, [this] {
         connected_ = true;
@@ -77,7 +79,7 @@ void Model::ordersListRequest(std::uint64_t fromDate, std::uint64_t toDate) {
 
 }
 
-void Model::complateListRequest() {
+void Model::completeListRequest() {
     if (!connected_) {
         qWarning() << __FUNCTION__ << "called while the connection is not alive!";
         return;
@@ -88,7 +90,7 @@ void Model::complateListRequest() {
         return;
     }
 
-    auto msg = QSharedPointer<ComplateFoodRequestMessage>::create();
+    auto msg = QSharedPointer<CompleteFoodRequestMessage>::create();
     client->send(msg);
 }
 
@@ -127,8 +129,8 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::LoginReply:
         handleLoginReply(static_cast<const LoginReplyMessage &>(*msg));
         break;
-    case MessageId::ComplateFoodReply:
-        handleListFoodReply(static_cast<const ComplateFoodReplyMesage &>(*msg));
+    case MessageId::CompleteFoodReply:
+        handleListFoodReply(static_cast<const CompleteFoodReplyMesage &>(*msg));
         break;
     case MessageId::FoodChangeReply:
         handleFoodChangeReply(static_cast<const FoodChangeReplyMessage &>(*msg));
@@ -149,7 +151,7 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::FoodListRequest:
     case MessageId::OrderRequest:
     case MessageId::PayRequest:
-    case MessageId::ComplateFoodRequest:
+    case MessageId::CompleteFoodRequest:
     case MessageId::FoodChangeRequest:
     case MessageId::OrderStatusChangeRequest:
         qWarning() << "Can't handle message:" << msg->id();
@@ -208,7 +210,7 @@ void Model::handleOrderStatusChangeReply(const OrderStatusChangeReplyMessage &st
     }
 }
 
-void Model::handleListFoodReply(const ComplateFoodReplyMesage &msg) {
+void Model::handleListFoodReply(const CompleteFoodReplyMesage &msg) {
     if (actualState != State::Working) {
         qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
         return;

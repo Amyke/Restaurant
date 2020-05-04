@@ -6,10 +6,10 @@ using System.Text;
 namespace communication_lib
 {
     [MessagePackObject]
-    public sealed class ComplateFoodReplyMesage : Message
+    public sealed class CompleteFoodReplyMessage : Message
     {
         [IgnoreMember]
-        public MessageId Id => MessageId.ComplateFoodReply;
+        public MessageId Id => MessageId.CompleteFoodReply;
 
         [Key(0)]
         public List<Food> FoodData { get; set; } = new List<Food>();

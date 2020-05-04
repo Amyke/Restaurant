@@ -17,8 +17,8 @@ enum class MessageId : std::uint32_t {
     OrderArrivedRequest,
     OrderArrivedReply,
     NotificationOrders,
-    ComplateFoodRequest,
-    ComplateFoodReply,
+    CompleteFoodRequest,
+    CompleteFoodReply,
     FoodChangeRequest,
     FoodChangeReply,
     OrderStatusChangeRequest,
@@ -26,7 +26,7 @@ enum class MessageId : std::uint32_t {
 };
 MSGPACK_ADD_ENUM(MessageId);
 
-enum class OrderStatus : std::uint32_t { Pending, InProgress, Complated, Payed };
+enum class OrderStatus : std::uint32_t { Pending, InProgress, Completed, Payed };
 MSGPACK_ADD_ENUM(OrderStatus);
 
 struct FoodContains {
@@ -206,22 +206,22 @@ struct PayReplyMessage final : Message {
 
     MSGPACK_DEFINE(Status);
 };
-struct ComplateFoodRequestMessage final : Message {
-    ComplateFoodRequestMessage() = default;
+struct CompleteFoodRequestMessage final : Message {
+    CompleteFoodRequestMessage() = default;
 
     MessageId id() const final {
-        return MessageId::ComplateFoodRequest;
+        return MessageId::CompleteFoodRequest;
     }
 };
 
-struct ComplateFoodReplyMesage final : Message {
-    ComplateFoodReplyMesage() = default;
+struct CompleteFoodReplyMesage final : Message {
+    CompleteFoodReplyMesage() = default;
 
-    ComplateFoodReplyMesage(std::vector<Food> food) : Foods(food) {
+    CompleteFoodReplyMesage(std::vector<Food> food) : Foods(food) {
     }
 
     MessageId id() const final {
-        return MessageId::ComplateFoodReply;
+        return MessageId::CompleteFoodReply;
     }
 
     std::vector<Food> Foods;

@@ -37,7 +37,7 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     addWidget(orderListView);
     addWidget(toolbox_);
 
-    connect(&model, &Model::loginSucceded, this, [this, &model] { model.complateListRequest(); });
+    connect(&model, &Model::loginSucceded, this, [this, &model] { model.completeListRequest(); });
 
     connect(&model, &Model::loginSucceded, this, [this, &model] {
         auto now = QDateTime::currentDateTime();
@@ -65,10 +65,10 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
         model.orderStatusChangeRequest(orderId, status);
     });
 
-    connect(orderDetailsView, &OrderDetailsWidget::complated, this, [this, orderListView, &model] {
+    connect(orderDetailsView, &OrderDetailsWidget::completed, this, [this, orderListView, &model] {
         auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
-        auto status = OrderStatus::Complated;
+        auto status = OrderStatus::Completed;
         model.orderStatusChangeRequest(orderId, status);
     });
     connect(orderDetailsView, &OrderDetailsWidget::payed, this, [this, orderListView, &model] {
@@ -94,7 +94,7 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     connect(&model, &Model::foodChangeSucceded, this, [this, &model, administrationView] {
         QMessageBox::information(administrationView, tr("Food change success"),
                                  tr("the table is going to be refreshed"), QMessageBox::StandardButton::Ok);
-        model.complateListRequest();
+        model.completeListRequest();
     });
 
     connect(&model, &Model::foodChangeFailed, this, [this] {

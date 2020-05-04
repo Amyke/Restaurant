@@ -6,9 +6,9 @@ using System.Text;
 namespace communication_lib
 {
     [MessagePackObject]
-    public sealed class ComplateFoodRequestMesage : Message
+    public sealed class CompleteFoodRequestMessage : Message
     {
         [IgnoreMember]
-        public MessageId Id => MessageId.ComplateFoodRequest;
+        public MessageId Id => MessageId.CompleteFoodRequest;
     }
 }

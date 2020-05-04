@@ -74,25 +74,25 @@ QVariant FoodModel::data(const QModelIndex &index, int role) const {
 bool FoodModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     switch (index.column()) {
     case 0:
-        if (value.canConvert<QString>()) {
+        if (!value.canConvert<QString>()) {
             return false;
         }
         foodChanges[index.row()].FoodData.FoodName = value.toString().toStdString();
         return true;
     case 1:
-        if (value.canConvert<int>()) {
+        if (!value.canConvert<int>()) {
             return false;
         }
         foodChanges[index.row()].FoodData.FoodPrice = value.toInt();
         return true;
     case 2:
-        if (value.canConvert<int>()) {
+        if (!value.canConvert<int>()) {
             return false;
         }
         foodChanges[index.row()].FoodData.Amount = value.toInt();
         return true;
     case 3:
-        if (value.canConvert<bool>()) {
+        if (!value.canConvert<bool>()) {
             return false;
         }
         foodChanges[index.row()].Visible = value.toBool();

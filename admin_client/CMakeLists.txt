@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 
-add_executable(restaurantAdmin-app WIN32)
-target_sources(restaurantAdmin-app PRIVATE
-  main.cpp
+add_library(restaurantAdmin-app.lib STATIC)
+target_sources(restaurantAdmin-app.lib PRIVATE
 
   Model.hpp
   Model.cpp
@@ -31,16 +30,33 @@ target_sources(restaurantAdmin-app PRIVATE
   DiagrammWidget.cpp
   DiagrammWidget.hpp
 )
+
+target_include_directories(restaurantAdmin-app.lib
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(restaurantAdmin-app.lib
+  PUBLIC Qt5::Widgets
+         client_lib
+)
+
+set_target_properties(restaurantAdmin-app.lib PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+)
+
+
+add_executable(restaurantAdmin-app WIN32)
+target_sources(restaurantAdmin-app PRIVATE
+  main.cpp
+)
 target_link_libraries(restaurantAdmin-app
-  PRIVATE Qt5::Widgets
-          Qt5::Network
-          client_lib
+  PRIVATE restaurantAdmin-app.lib
 )
 set_target_properties(restaurantAdmin-app PROPERTIES
   AUTOMOC ON
-  AUTOUIC ON
   VS_DEBUGGER_ENVIRONMENT "Path=$(Path)\;${Qt5_DIR}/../../../bin"
 )
+
 
 install(
   TARGETS restaurantAdmin-app

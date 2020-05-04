@@ -1,7 +1,7 @@
 #ifndef ORDERSMODEL_HPP
 #define ORDERSMODEL_HPP
 
-#include <QAbstractTableModel>
+#include <QtCore/QAbstractTableModel>
 
 #include "Model.hpp"
 
@@ -17,7 +17,8 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
+    
+    static void mergeOrders(std::vector<Orders> &present, const std::vector<Orders> &newOrders);
     void addOrders(const std::vector<Orders> &order);
 
     void setStatus(std::uint64_t orderId, OrderStatus status, std::uint64_t date);

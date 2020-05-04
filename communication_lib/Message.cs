@@ -18,8 +18,8 @@ namespace communication_lib
         OrderArrivedRequest,
         OrderArrivedReply,
         NotificationOrders,
-        ComplateFoodRequest,
-        ComplateFoodReply,
+        CompleteFoodRequest,
+        CompleteFoodReply,
         FoodChangeRequest,
         FoodChangeReply,
         OrderStatusChangeRequest,
@@ -30,7 +30,7 @@ namespace communication_lib
     {
         Pending = 0,
         InProgress,
-        Complated,
+        Completed,
         Payed
     }
 

@@ -1,11 +1,11 @@
 #include "OrdersModel.hpp"
 
-#include <QDateTime>
+#include <QtCore/QDateTime>
 
 OrdersModel::OrdersModel(QObject *parent) : QAbstractTableModel(parent) {
-    std::vector<FoodContains> foods{FoodContains{0, "valami", 2, 5}};
+  /*  std::vector<FoodContains> foods{FoodContains{0, "valami", 2, 5}};
     orders_ = {Orders{1, "TableId", foods, QDateTime::currentDateTime().toTime_t(), OrderStatus::Payed},
-               Orders{2, "TableId2", {}, QDateTime::currentDateTime().toTime_t(), OrderStatus::Complated}};
+               Orders{2, "TableId2", {}, QDateTime::currentDateTime().toTime_t(), OrderStatus::Completed}};*/
 
     qRegisterMetaType<std::vector<FoodContains>>();
 }
@@ -66,12 +66,11 @@ QVariant OrdersModel::data(const QModelIndex &index, int role) const {
     return {};
 }
 
-void OrdersModel::addOrders(const std::vector<Orders> &order) {
-    beginResetModel();
+void OrdersModel::mergeOrders(std::vector<Orders>& present, const std::vector<Orders> &newOrders) {
 
     std::vector<Orders> toBeInserted;
-    auto newIt = order.begin();
-    for (auto originalIt = orders_.begin(); originalIt != orders_.end() && newIt != order.end();) {
+    auto newIt = newOrders.begin();
+    for (auto originalIt = present.begin(); originalIt != present.end() && newIt != newOrders.end();) {
 
         if (originalIt->OrderId == newIt->OrderId) {
             *originalIt = *newIt;
@@ -84,12 +83,16 @@ void OrdersModel::addOrders(const std::vector<Orders> &order) {
         }
     }
 
-    orders_.insert(orders_.end(), newIt, order.end());
-    orders_.insert(orders_.end(), toBeInserted.begin(), toBeInserted.end());
+    present.insert(present.end(), newIt, newOrders.end());
+    present.insert(present.end(), toBeInserted.begin(), toBeInserted.end());
 
-    std::sort(orders_.begin(), orders_.end(),
+    std::sort(present.begin(), present.end(),
               [](const Orders &left, const Orders &right) { return left.OrderId < right.OrderId; });
+}
 
+void OrdersModel::addOrders(const std::vector<Orders> &order) {
+    beginResetModel();
+    mergeOrders(orders_, order);
     endResetModel();
 }
 
@@ -114,8 +117,8 @@ QString OrdersModel::orderStatusToString(OrderStatus status) const {
         return tr("Pending");
     case OrderStatus::InProgress:
         return tr("In Progress");
-    case OrderStatus::Complated:
-        return tr("Complated");
+    case OrderStatus::Completed:
+        return tr("Completed");
     case OrderStatus::Payed:
         return tr("Payed");
     }

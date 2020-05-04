@@ -52,8 +52,8 @@ namespace communication_lib
                 MessageId.OrderArrivedRequest => MessagePackSerializer.Deserialize<OrderArrivedRequestMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.OrderArrivedReply => MessagePackSerializer.Deserialize<OrderArrivedReplyMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.NotificationOrders => MessagePackSerializer.Deserialize<NotificationOrdersMessage>(buffer, cancellationToken: cancellationToken),
-                MessageId.ComplateFoodRequest => MessagePackSerializer.Deserialize<ComplateFoodRequestMesage>(buffer, cancellationToken: cancellationToken),
-                MessageId.ComplateFoodReply => MessagePackSerializer.Deserialize< ComplateFoodReplyMesage>(buffer, cancellationToken: cancellationToken),
+                MessageId.CompleteFoodRequest => MessagePackSerializer.Deserialize<CompleteFoodRequestMessage>(buffer, cancellationToken: cancellationToken),
+                MessageId.CompleteFoodReply => MessagePackSerializer.Deserialize< CompleteFoodReplyMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.OrderStatusChangeRequest => MessagePackSerializer.Deserialize<OrderStatusChangeRequestMessage>(buffer, cancellationToken: cancellationToken),
                 MessageId.OrderStatusChangeReply => MessagePackSerializer.Deserialize<OrderStatusChangeReplyMessage>(buffer, cancellationToken: cancellationToken),
                 _ => throw new System.NotImplementedException()

@@ -27,13 +27,13 @@ OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *paren
     labelLayout->addWidget(labelStatus, 0, Qt::AlignRight);
 
     auto inProgressButton = new QPushButton(tr("In Progress"));
-    auto complatedButton = new QPushButton(tr("Complated"));
+    auto completedButton = new QPushButton(tr("Completed"));
     auto payedButton = new QPushButton(tr("Payed"));
 
     layout->addLayout(labelLayout);
     layout->addWidget(selectedOrder);
     layout->addWidget(inProgressButton);
-    layout->addWidget(complatedButton);
+    layout->addWidget(completedButton);
     layout->addWidget(payedButton);
 
     setLayout(layout);
@@ -46,16 +46,16 @@ OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *paren
     mapper->revert();
 
     connect(mapper, &QDataWidgetMapper::currentIndexChanged, this,
-            [this, mapper, inProgressButton, complatedButton, payedButton](int index) {
+            [this, mapper, inProgressButton, completedButton, payedButton](int index) {
                auto actualStatus = mapper->model()->index(index, 2).data(Qt::UserRole).value<OrderStatus>();
                 inProgressButton->setEnabled(actualStatus == OrderStatus::Pending);
-                complatedButton->setEnabled(actualStatus == OrderStatus::InProgress);
-                payedButton->setEnabled(actualStatus == OrderStatus::Complated);
+                completedButton->setEnabled(actualStatus == OrderStatus::InProgress);
+                payedButton->setEnabled(actualStatus == OrderStatus::Completed);
             });
 
     connect(inProgressButton, &QPushButton::clicked, this, [this]{ 
         inProgress(); });
-    connect(complatedButton, &QPushButton::clicked, this, [this] { complated(); });
+    connect(completedButton, &QPushButton::clicked, this, [this] { completed(); });
     connect(payedButton, &QPushButton::clicked, this, [this] { payed(); });
 }
 

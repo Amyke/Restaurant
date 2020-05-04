@@ -13,6 +13,7 @@
 class QTcpSocket;
 
 Q_DECLARE_METATYPE(Orders);
+Q_DECLARE_METATYPE(std::uint64_t);
 
 class Model : public QObject {
     Q_OBJECT
@@ -34,7 +35,7 @@ public:
 
     void ordersListRequest(std::uint64_t fromDate, std::uint64_t toDate);
 
-    void complateListRequest();
+    void completeListRequest();
     void foodChangeRequest(const Delta &delta);
 
     void orderStatusChangeRequest(std::uint64_t orderId, OrderStatus status);
@@ -67,7 +68,7 @@ private:
     
     void handleOrderListReply(const OrderArrivedReplyMessage &msg);
 
-    void handleListFoodReply(const ComplateFoodReplyMesage &msg);
+    void handleListFoodReply(const CompleteFoodReplyMesage &msg);
     void handleFoodChangeReply(const FoodChangeReplyMessage &msg);
 
     void handleNotificationOrders(const NotificationOrdersMessage &msg);
