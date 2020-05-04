@@ -23,4 +23,5 @@ target_link_libraries(client_lib
 set_target_properties(client_lib PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
+  FOLDER "Libraries"
 )

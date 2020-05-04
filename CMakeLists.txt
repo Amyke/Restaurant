@@ -6,6 +6,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(BeginOfDeath VERSION 0.1.0 LANGUAGES CXX)
 
+set_property(GLOBAL PROPERTY
+  USE_FOLDERS ON
+)
+set_property(GLOBAL PROPERTY
+  PREDEFINED_TARGETS_FOLDER "CMake"
+)
+
 include(FeatureSummary)
 
 find_package(msgpack 3.2.1 EXACT REQUIRED CONFIG)
@@ -27,6 +34,7 @@ function(add_qt_test _name _source)
   target_link_libraries(${_name} PRIVATE Qt5::Test)
   set_target_properties(${_name} PROPERTIES
     AUTOMOC ON
+    FOLDER "Tests"
     VS_DEBUGGER_ENVIRONMENT "Path=$(Path)\;${Qt5_DIR}/../../../bin"
   )
 

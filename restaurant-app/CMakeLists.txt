@@ -39,6 +39,7 @@ target_link_libraries(restaurant-app.lib
 set_target_properties(restaurant-app.lib PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
+  FOLDER "Libraries"
 )
 
 add_executable(restaurant-app WIN32)

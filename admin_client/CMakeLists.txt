@@ -42,6 +42,7 @@ target_link_libraries(restaurantAdmin-app.lib
 set_target_properties(restaurantAdmin-app.lib PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
+  FOLDER "Libraries"
 )
 
 
