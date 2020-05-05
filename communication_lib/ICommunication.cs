@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace communication_lib
 {
-    interface ICommunication
+    public interface ICommunication
     {
         IPEndPoint ListenAddress { get; }
         event EventHandler<IClient> ConnectionEstablished;
 
         Task Listen(CancellationToken cancellation);
         Task<IClient> Connect(IPEndPoint address, CancellationToken cancellation);
-        Task Close();
+        void Close();
     }
 }

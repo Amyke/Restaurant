@@ -95,8 +95,6 @@ namespace communication_lib
         private IPEndPoint _endpoint;
         private TcpListener _listener;
         private List<Protocol> _acceptedClients = new List<Protocol>();
-        bool _shouldClose = false;
-        bool _running;
 
         public IPEndPoint ListenAddress => _endpoint;
 
@@ -145,9 +143,9 @@ namespace communication_lib
             return protocol.Client;
         }
 
-        public async Task Close()
+        public void Close()
         {
-            throw new NotImplementedException();
+            _listener.Stop();
         }
 
         internal void OnConnectionEstablished(IClient client)
