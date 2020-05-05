@@ -18,6 +18,10 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+
+    void clearSelectedFoods();
+
     void setAvailableFoods(const std::vector<FoodContains> &);
     void incrementAmount(std::uint32_t foodId);
 

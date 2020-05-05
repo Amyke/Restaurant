@@ -44,6 +44,24 @@ QVariant CartModel::data(const QModelIndex &index, int role) const {
     return {};
 }
 
+bool CartModel::removeRows(int row, int count, const QModelIndex &parent) {
+    beginRemoveRows(QModelIndex(), row, row + count - 1);
+
+    auto it = selectedFoods_.begin() + row;
+    selectedFoods_.erase(it, it + count);
+
+    endRemoveRows();
+    return true;
+}
+
+void CartModel::clearSelectedFoods() {
+    beginResetModel();
+
+    selectedFoods_.clear();
+
+    endResetModel();
+}
+
 void CartModel::setAvailableFoods(const std::vector<FoodContains> &value) {
     beginResetModel();
     foods_ = value;

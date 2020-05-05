@@ -51,12 +51,14 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
     addWidget(endwindow);
 
     connect(model, &Model::loginSucceded, this, [this, welcomeWindow] { setCurrentWidget(welcomeWindow); });
-    connect(model, &Model::foodListRefreshed, this,
-            [this, orderwindow](const std::vector<FoodContains> &foodList) {
-                orderwindow->setFoodList(foodList);
-                setCurrentWidget(orderwindow);
-            });
-    connect(model, &Model::orderSucceded, this, [this, paywindow] { setCurrentWidget(paywindow); });
+    connect(model, &Model::foodListRefreshed, this, [this, orderwindow](const std::vector<FoodContains> &foodList) {
+        orderwindow->setFoodList(foodList);
+        setCurrentWidget(orderwindow);
+    });
+    connect(model, &Model::orderSucceded, this, [this, paywindow](const std::vector<FoodContains> &foods) {
+        paywindow->setFoodList(foods);
+        setCurrentWidget(paywindow);
+    });
     connect(model, &Model::paySucceded, this, [this, endwindow] { setCurrentWidget(endwindow); });
     connect(endwindow, &EndWidget::startAgain, this, [this, welcomeWindow] { setCurrentWidget(welcomeWindow); });
 
@@ -78,8 +80,9 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
     connect(model, &Model::orderFailed, this, [this] {
         QMessageBox::critical(this, tr("Order error"), tr("The requested order is sold out, pls choose another food"));
     });
-    connect(model, &Model::payFailed, this, [this] {
+    connect(model, &Model::payFailed, this, [this, paywindow] {
         QMessageBox::critical(this, tr("Pay error"), tr("The pay request is faiiled, pls try again or ask help"));
+        paywindow->payFailed();
     });
 }
 

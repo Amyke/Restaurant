@@ -1,10 +1,11 @@
 #include "PayWidget.hpp"
 #include "OrderModel.hpp"
 
+#include <QtCore/QString>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QTableView>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets\QMessageBox>
 
@@ -12,48 +13,40 @@
 
 #include "Model.hpp"
 
+PayWidget::PayWidget(QWidget *parent) : QWidget(parent) {
 
-PayWidget::PayWidget(QWidget* parent) : QWidget(parent) {
-	
-	auto layout = new QVBoxLayout;
+    auto layout = new QVBoxLayout;
 
+    auto selectFood = new QTableView;
+    model_ = new OrderModel(selectFood);
+    selectFood->setModel(model_);
+    selectFood->setStyleSheet(" QTableViewEdit {border-style: outset}");
 
-	auto selectFood = new QTableView;
-	auto model = new OrderModel(selectFood);
-	selectFood->setModel(model);
-	selectFood->setStyleSheet(" QTableViewEdit {border-style: outset}");
+    payButton_ = new QPushButton(tr("Pay"));
 
+    allPrice_ = new QLabel(tr("Price: "));
 
-	auto payButton = new QPushButton(tr("Pay"));
+    layout->addWidget(selectFood);
+    layout->addWidget(payButton_);
+    layout->addWidget(allPrice_);
 
-	qint32 price = 0;
-	/*for each (auto item in PayWidgetClientModel::order)
-	{
-		price += (item.FoodPrice * item.Amount);
-	}*/
-	auto allPrice = new QLabel("Price: " + price, this);
+    setLayout(layout);
 
+    connect(payButton_, &QPushButton::clicked, this, [this] {
+        payed();
 
-	layout->addWidget(selectFood);
-	layout->addWidget(payButton);
-	layout->addWidget(allPrice);
-
-	setLayout(layout);
-
-
-	connect(payButton, &QPushButton::clicked, this,
-		[this, selectFood] {
-			payed();	
-
-			pay_request();
-		});
+        payButton_->setEnabled(false);
+    });
 }
 
-void PayWidget::pay_request()
-{
-	QMessageBox msgBox;
-	msgBox.setText("Your request has been sent! (= ");
-	msgBox.exec();
+void PayWidget::setFoodList(const std::vector<FoodContains> &foodList) {
+    model_->setFoodList(foodList);
+    int price = std::accumulate(foodList.begin(), foodList.end(), 0, [](int sum, const FoodContains &value) {
+        return sum + value.FoodPrice * value.Amount;
+    });
+    allPrice_->setText(tr("Price: %1").arg(price));
+}
 
-	msgBox.Abort;
+void PayWidget::payFailed() {
+    payButton_->setEnabled(true);
 }

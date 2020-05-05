@@ -3,18 +3,30 @@
 
 #include <QtWidgets/QStackedWidget>
 
+#include "Message.hpp"
+
+class OrderModel;
+class QPushButton;
+class QLabel;
 
 class PayWidget : public QWidget {
-	Q_OBJECT;
+    Q_OBJECT;
+
 public:
-	explicit PayWidget(QWidget* parent = nullptr);
+    explicit PayWidget(QWidget *parent = nullptr);
+
+    void setFoodList(const std::vector<FoodContains> &foodList);
+
+    void payFailed();
 
 signals:
-	void payed();
+    void payed();
 
 private:
-	void pay_request(/*hey mate, i want to pay*/);
+    QLabel *allPrice_;
 
+    OrderModel *model_;
+    QPushButton *payButton_;
 };
 
 #endif //! PAYWIDGET_HPP

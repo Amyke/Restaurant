@@ -13,6 +13,21 @@ int OrderModel::columnCount(const QModelIndex &parent) const {
     return 3;
 }
 
+QVariant OrderModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+        switch (section) {
+        case 0:
+            return tr("Name");
+        case 1:
+            return tr("Amount");
+        case 2:
+            return tr("Price");
+        }
+    }
+
+    return QAbstractTableModel::headerData(section, orientation, role);
+}
+
 QVariant OrderModel::data(const QModelIndex &index, int role) const {
     if (role != Qt::DisplayRole) {
         return {};
@@ -29,4 +44,10 @@ QVariant OrderModel::data(const QModelIndex &index, int role) const {
     }
 
     return {};
+}
+
+void OrderModel::setFoodList(const std::vector<FoodContains> &foodList) {
+    beginResetModel();
+    order = foodList;
+    endResetModel();
 }
