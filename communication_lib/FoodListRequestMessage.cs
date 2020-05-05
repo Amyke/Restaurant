@@ -11,7 +11,5 @@ namespace communication_lib
         [IgnoreMember]
         public MessageId Id => MessageId.FoodListRequest;
 
-        [Key(0)]
-        public List<FoodContains> Foods { get; set; } = new List<FoodContains>();
     }
 }

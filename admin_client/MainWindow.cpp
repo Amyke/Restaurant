@@ -4,6 +4,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QToolBar>
+#include <QtWidgets/QLabel>
 
 #include <QSettings>
 
@@ -51,6 +52,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), model(new Model(n
     connect(debugMenu->addAction("Login"), &QAction::triggered, widget, [widget] { widget->setCurrentIndex(0); });
     connect(debugMenu->addAction("Workspace"), &QAction::triggered, widget, [widget] { widget->setCurrentIndex(1); });
 #endif
+
+    auto networkErrorWidget = new QLabel(tr("Network Error"));
+    widget->addWidget(networkErrorWidget);
+    widget->setCurrentWidget(networkErrorWidget);
+
+    connect(model, &Model::connectionStateChanged, this, [widget, networkErrorWidget, loginWindow](bool isOnline) {
+        if (!isOnline) {
+            widget->setCurrentWidget(networkErrorWidget);
+        } else {
+            widget->setCurrentWidget(loginWindow);
+        }
+    });
+
 
     connect(model, &Model::loginSucceded, this, [widget, workspace] { widget->setCurrentWidget(workspace); });
 

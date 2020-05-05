@@ -61,8 +61,8 @@ void CartModel::incrementAmount(std::uint32_t foodId) {
         return;
     }
 
-    auto search = std::find_if(foods_.begin(), foods_.end(),
-                               [foodId](const FoodContains &f) { return f.FoodId == foodId; });
+    auto search =
+        std::find_if(foods_.begin(), foods_.end(), [foodId](const FoodContains &f) { return f.FoodId == foodId; });
     if (search == foods_.end()) {
         return;
     }

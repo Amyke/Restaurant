@@ -29,7 +29,7 @@ EndWidget::EndWidget(QWidget* parent) : QWidget(parent) {
 
 
 	connect(weolcomePage, &QPushButton::clicked, this,
-		[this, byebye] {
+		[this] {
 
 			startAgain();
 		});

@@ -39,7 +39,7 @@ OrderWidget::OrderWidget(QWidget *parent) : QWidget(parent) {
     setLayout(mainLayout);
     connect(cartButton, &QPushButton::clicked, this, [this, selectFood] {
         auto selectionModel = selectFood->selectionModel();
-        for (auto index : selectionModel->selectedIndexes()) {
+        for (auto index : selectionModel->selectedRows()) {
             auto foodId = index.data(Qt::UserRole).value<std::uint32_t>();
             cartModel_->incrementAmount(foodId);
         }

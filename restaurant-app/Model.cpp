@@ -1,6 +1,7 @@
 #include "Model.hpp"
 
 #include <QtCore/QDebug>
+#include <QtCore/QTimer>
 
 QDebug &operator<<(QDebug &os, Model::State state) {
     switch (state) {
@@ -17,30 +18,27 @@ QDebug &operator<<(QDebug &os, Model::State state) {
 }
 
 QDebug &operator<<(QDebug &os, MessageId id) {
-    switch (id) {
-    case MessageId::LoginRequest:
-        return os << "LoginRequestMessage";
-    case MessageId::FoodListRequest:
-        return os << "FoodListRequestMessage";
-    case MessageId::OrderRequest:
-        return os << "FoodListReplyMessage";
-    case MessageId::PayRequest:
-        return os << "PayRequestMessage";
-    }
-
-    return os << "<INVALID>";
+    auto sv = to_string(id);
+    return os << QString::fromLatin1(sv.data(), sv.size());
 }
 
-Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client) {
+Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client), reconnectTimer_(new QTimer(this)) {
+    reconnectTimer_->setInterval(500);
 
     connect(client, &IClient::messageArrived, this, &Model::handleMessageArrived);
     connect(client, &IClient::connectionEstablished, this, [this] {
+        if (timeoutConnection_) {
+            reconnectTimer_->stop();
+        }
         connected_ = true;
         connectionStateChanged(connected_);
     });
     connect(client, &IClient::connectionLost, this, [this] {
         connected_ = false;
         connectionStateChanged(connected_);
+        if (timeoutConnection_) {
+            reconnectTimer_->start();
+        }
     });
 }
 
@@ -48,6 +46,10 @@ Model::~Model() = default;
 
 void Model::connectToServer(const QString &host, quint32 port) {
     client->connectToHost(host, port);
+    if (timeoutConnection_) {
+        disconnect(timeoutConnection_);
+    }
+    timeoutConnection_ = reconnectTimer_->callOnTimeout(this, [this, host, port] { connectToServer(host, port); });
 }
 
 void Model::login(const QString &username, const QString &password) {
@@ -114,7 +116,7 @@ void Model::paySend() {
         return;
     }
 
-    auto msg = QSharedPointer<PayRequestMessage>::create(true);
+    auto msg = QSharedPointer<PayRequestMessage>::create();
     client->send(msg);
 }
 
@@ -147,6 +149,12 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::FoodChangeRequest:
     case MessageId::FoodChangeReply:
     case MessageId::NotificationOrders:
+    case MessageId::CompleteFoodRequest:
+    case MessageId::CompleteFoodReply:
+    case MessageId::OrderArrivedRequest:
+    case MessageId::OrderArrivedReply:
+    case MessageId::OrderStatusChangeRequest:
+    case MessageId::OrderStatusChangeReply:
         qWarning() << "Can't handle message:" << msg->id();
         break;
     }
@@ -174,7 +182,7 @@ void Model::handleListFoodReply(const FoodListReplyMessage &msg) {
         qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
         return;
     }
-    
+
     ActualStateChange(actualState);
     availableFoods = msg.Foods;
     foodListRefreshed(availableFoods);

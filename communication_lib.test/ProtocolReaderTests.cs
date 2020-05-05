@@ -101,7 +101,7 @@ namespace communication_lib.test
         [Test]
         public async Task PayReguestMessage()
         {
-            var expected = new PayRequestMessage { PayIntent = true };
+            var expected = new PayRequestMessage { };
             await SendMessage(expected);
             _stream.Seek(0, SeekOrigin.Begin);
 

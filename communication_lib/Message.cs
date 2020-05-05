@@ -60,11 +60,11 @@ namespace communication_lib
     public class Orders
     {
         [Key(0)]
-        public string OrderId { get; set; }
+        public UInt64 OrderId { get; set; }
         [Key(1)]
         public string TableId { get; set; }
         [Key(2)]
-        public List<FoodContains> OrderedFoods { get; set; }
+        public List<FoodContains> OrderedFoods { get; set; } = new List<FoodContains>();
         [Key(3)]
         public UInt64 OrderDate { get; set; }
         [Key(4)]
@@ -77,16 +77,16 @@ namespace communication_lib
         [Key(0)]
         public FoodContains FoodData { get; set; }
         [Key(1)]
-        bool Visible { get; set; }
+        public bool Visible { get; set; }
     };
 
     [MessagePackObject]
     public class Delta
     {
         [Key(0)]
-        public List<Food> ModifiedFoods { get; set; }
+        public List<Food> ModifiedFoods { get; set; } = new List<Food>();
         [Key(1)]
-        public List<Food> CreatedFoods { get; set; }
+        public List<Food> CreatedFoods { get; set; } = new List<Food>();
     };
 
     public interface Message

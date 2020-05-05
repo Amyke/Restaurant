@@ -7,7 +7,7 @@
 #include <memory>
 #include <optional>
 
-class Message;
+struct Message;
 class QIODevice;
 
 using MessagePtr = QSharedPointer<Message>;

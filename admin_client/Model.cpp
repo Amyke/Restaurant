@@ -1,5 +1,8 @@
 #include "Model.hpp"
 
+#include <QtCore/QDebug>
+#include <QtCore/QTimer>
+
 QDebug &operator<<(QDebug &os, Model::State state) {
     switch (state) {
     case Model::State::WaitingForLogin:
@@ -11,33 +14,32 @@ QDebug &operator<<(QDebug &os, Model::State state) {
 }
 
 QDebug &operator<<(QDebug &os, MessageId id) {
-    switch (id) {
-    case MessageId::LoginRequest:
-        return os << "LoginRequestMessage";
-    case MessageId::CompleteFoodRequest:
-        return os << "CompleteFoodRequestMessage";  
-    case MessageId::FoodChangeRequest:
-        return os << "FoodChangeRequestMessage";
-    case MessageId::OrderStatusChangeRequest:
-        return os << "OrderStatusChangeRequestMessage";
-    case MessageId::OrderArrivedRequest:
-        return os << "OrderedArrivedRequestMessage";
-    }
-
-    return os << "<INVALID>";
+    auto sv = to_string(id);
+    return os << QString::fromLatin1(sv.data(), sv.size());
 }
 
-Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client) {
+Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client), reconnectTimer_(new QTimer(this)) {
     qRegisterMetaType<std::uint64_t>();
+
+    reconnectTimer_->setInterval(500);
 
     connect(client, &IClient::messageArrived, this, &Model::handleMessageArrived);
     connect(client, &IClient::connectionEstablished, this, [this] {
+        if (timeoutConnection_) {
+            reconnectTimer_->stop();
+        }
+
         connected_ = true;
+        actualState = State::WaitingForLogin;
         connectionStateChanged(connected_);
     });
     connect(client, &IClient::connectionLost, this, [this] {
         connected_ = false;
         connectionStateChanged(connected_);
+
+        if (timeoutConnection_) {
+            reconnectTimer_->start();
+        }
     });
 }
 
@@ -45,6 +47,10 @@ Model::~Model() = default;
 
 void Model::connectToServer(const QString &host, quint32 port) {
     client->connectToHost(host, port);
+    if (timeoutConnection_) {
+        disconnect(timeoutConnection_);
+    }
+    timeoutConnection_ = reconnectTimer_->callOnTimeout(this, [this, host, port] { connectToServer(host, port); });
 }
 
 void Model::login(const QString &username, const QString &password) {
@@ -76,7 +82,6 @@ void Model::ordersListRequest(std::uint64_t fromDate, std::uint64_t toDate) {
 
     auto msg = QSharedPointer<OrderArrivedRequestMessage>::create(fromDate, toDate);
     client->send(msg);
-
 }
 
 void Model::completeListRequest() {
@@ -137,6 +142,7 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
         break;
     case MessageId::OrderArrivedReply:
         handleOrderListReply(static_cast<const OrderArrivedReplyMessage &>(*msg));
+        break;
     case MessageId::NotificationOrders:
         handleNotificationOrders(static_cast<const NotificationOrdersMessage &>(*msg));
         break;
@@ -167,7 +173,7 @@ void Model::handleLoginReply(const LoginReplyMessage &msg) {
 
     switch (msg.Status) {
     case LoginStatus::Ok:
-        ActualStateChange(actualState);
+        actualState = State::Working;
         loginSucceded();
         break;
     case LoginStatus::Error:
@@ -184,7 +190,6 @@ void Model::handleOrderListReply(const OrderArrivedReplyMessage &msg) {
 
     orderListArrived(msg.Orders);
 }
-
 
 void Model::handleNotificationOrders(const NotificationOrdersMessage &msg) {
     if (actualState != State::Working) {
@@ -232,13 +237,6 @@ void Model::handleFoodChangeReply(const FoodChangeReplyMessage &msg) {
         break;
     case FoodChangeStatus::Failed:
         foodChangeFailed();
-        break;
-    }
-}
-void Model::ActualStateChange(const State &state) {
-    switch (state) {
-    case State::WaitingForLogin:
-        actualState = State::Working;
         break;
     }
 }

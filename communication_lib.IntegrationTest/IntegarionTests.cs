@@ -290,7 +290,7 @@ namespace communication_lib.IntegrationTest
             var msg12 = new LoginReplyMessage { Status = LoginStatus.Error };
             var msg21 = new LoginRequestMessage { Name = "ELTEIK", Password = "Szamhalok" };
             var msg22 = new LoginReplyMessage { Status = LoginStatus.Ok };
-            var msg31 = new PayRequestMessage { PayIntent = true };
+            var msg31 = new PayRequestMessage {};
             var msg32 = new PayReplyMessage { Status = PayStatus.Failed };
 
             var messagetoserver1 = _connectedClients[0].Messages();

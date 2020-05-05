@@ -10,6 +10,7 @@
 #include "Message.hpp"
 
 class QTcpSocket;
+class QTimer;
 
 class Model : public QObject {
     Q_OBJECT
@@ -62,6 +63,8 @@ private:
 
 private:
     IClient *client;
+    QTimer *reconnectTimer_;
+    QMetaObject::Connection timeoutConnection_;
     bool connected_ = false;
     State actualState = State::WaitingForLogin;
 

@@ -11,6 +11,7 @@
 #include "Message.hpp"
 
 class QTcpSocket;
+class QTimer;
 
 Q_DECLARE_METATYPE(Orders);
 Q_DECLARE_METATYPE(std::uint64_t);
@@ -78,6 +79,8 @@ private:
 
 private:
     IClient *client;
+    QTimer *reconnectTimer_;
+    QMetaObject::Connection timeoutConnection_;
     bool connected_ = false;
     State actualState = State::WaitingForLogin;
     std::vector<Food> availableFoods_;

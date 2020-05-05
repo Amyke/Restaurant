@@ -1,9 +1,11 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
-#include "msgpack.hpp"
 #include <string>
+#include <string_view>
 #include <vector>
+
+#include <msgpack.hpp>
 
 enum class MessageId : std::uint32_t {
     LoginRequest = 0,
@@ -25,6 +27,46 @@ enum class MessageId : std::uint32_t {
     OrderStatusChangeReply
 };
 MSGPACK_ADD_ENUM(MessageId);
+
+inline std::string_view to_string(MessageId id) {
+    switch (id) {
+    case MessageId::LoginRequest:
+        return "LoginRequest";
+    case MessageId::LoginReply:
+        return "LoginReply";
+    case MessageId::FoodListRequest:
+        return "FoodListRequest";
+    case MessageId::FoodListReply:
+        return "FoodListReply";
+    case MessageId::OrderRequest:
+        return "OrderRequest";
+    case MessageId::OrderReply:
+        return "OrderReply";
+    case MessageId::PayRequest:
+        return "PayRequest";
+    case MessageId::PayReply:
+        return "PayReply";
+    case MessageId::OrderArrivedRequest:
+        return "OrderArrivedRequest";
+    case MessageId::OrderArrivedReply:
+        return "OrderArrivedReply";
+    case MessageId::NotificationOrders:
+        return "NotificationOrders";
+    case MessageId::CompleteFoodRequest:
+        return "CompleteFoodRequest";
+    case MessageId::CompleteFoodReply:
+        return "CompleteFoodReply";
+    case MessageId::FoodChangeRequest:
+        return "FoodChangeRequest";
+    case MessageId::FoodChangeReply:
+        return "FoodChangeReply";
+    case MessageId::OrderStatusChangeRequest:
+        return "OrderStatusChangeRequest";
+    case MessageId::OrderStatusChangeReply:
+        return "OrderStatusChangeReply";
+    }
+    return "<INVALID>";
+}
 
 enum class OrderStatus : std::uint32_t { Pending, InProgress, Completed, Payed };
 MSGPACK_ADD_ENUM(OrderStatus);
@@ -128,16 +170,10 @@ struct LoginReplyMessage final : Message {
 
 struct FoodListRequestMessage final : Message {
     FoodListRequestMessage() = default;
-    FoodListRequestMessage(const std::vector<FoodContains> &foods) : Foods(foods) {
-    }
 
     MessageId id() const final {
         return MessageId::FoodListRequest;
     }
-
-    std::vector<FoodContains> Foods;
-
-    MSGPACK_DEFINE(Foods);
 };
 
 struct FoodListReplyMessage final : Message {
@@ -156,15 +192,15 @@ struct FoodListReplyMessage final : Message {
 
 struct OrderRequestMessage final : Message {
     OrderRequestMessage() = default;
-    OrderRequestMessage(const std::vector<FoodAmount> &orderedFood) : orderedFoods(orderedFoods) {
+    OrderRequestMessage(const std::vector<FoodAmount> &orderedFoods) : OrderedFoods(orderedFoods) {
     }
     MessageId id() const final {
         return MessageId::OrderRequest;
     }
 
-    std::vector<FoodAmount> orderedFoods;
+    std::vector<FoodAmount> OrderedFoods;
 
-    MSGPACK_DEFINE(orderedFoods);
+    MSGPACK_DEFINE(OrderedFoods);
 };
 
 struct OrderReplyMessage final : Message {
@@ -183,15 +219,10 @@ struct OrderReplyMessage final : Message {
 
 struct PayRequestMessage final : Message {
     PayRequestMessage() = default;
-    PayRequestMessage(bool payintent) : PayIntent(payintent) {
-    }
 
     MessageId id() const final {
         return MessageId::PayRequest;
     }
-    bool PayIntent;
-
-    MSGPACK_DEFINE(PayIntent);
 };
 
 struct PayReplyMessage final : Message {
@@ -291,7 +322,7 @@ struct OrderStatusChangeReplyMessage final : Message {
 struct OrderArrivedRequestMessage final : Message {
     OrderArrivedRequestMessage() = default;
 
-    OrderArrivedRequestMessage(std::uint64_t fromDate, std::uint64_t toDate) : FromDate(fromDate), ToDate(toDate){
+    OrderArrivedRequestMessage(std::uint64_t fromDate, std::uint64_t toDate) : FromDate(fromDate), ToDate(toDate) {
     }
 
     MessageId id() const final {

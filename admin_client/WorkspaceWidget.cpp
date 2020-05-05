@@ -37,9 +37,9 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     addWidget(orderListView);
     addWidget(toolbox_);
 
-    connect(&model, &Model::loginSucceded, this, [this, &model] { model.completeListRequest(); });
+    connect(&model, &Model::loginSucceded, this, [&model] { model.completeListRequest(); });
 
-    connect(&model, &Model::loginSucceded, this, [this, &model] {
+    connect(&model, &Model::loginSucceded, this, [&model] {
         auto now = QDateTime::currentDateTime();
         auto oneWeekAgo = now.addDays(-7);
         model.ordersListRequest(oneWeekAgo.toTime_t(), now.toTime_t());
@@ -58,20 +58,20 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
                 mapper->setCurrentIndex(current.row());
             });
 
-    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [this, orderListView, &model] {
+    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [orderListView, &model] {
         auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::InProgress;
         model.orderStatusChangeRequest(orderId, status);
     });
 
-    connect(orderDetailsView, &OrderDetailsWidget::completed, this, [this, orderListView, &model] {
+    connect(orderDetailsView, &OrderDetailsWidget::completed, this, [orderListView, &model] {
         auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::Completed;
         model.orderStatusChangeRequest(orderId, status);
     });
-    connect(orderDetailsView, &OrderDetailsWidget::payed, this, [this, orderListView, &model] {
+    connect(orderDetailsView, &OrderDetailsWidget::payed, this, [orderListView, &model] {
         auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::Payed;
@@ -89,9 +89,9 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     });
 
     connect(administrationView, &AdministrationWidget::changedFood, this,
-            [this, &model](const Delta &value) { model.foodChangeRequest(value); });
+            [ &model](const Delta &value) { model.foodChangeRequest(value); });
 
-    connect(&model, &Model::foodChangeSucceded, this, [this, &model, administrationView] {
+    connect(&model, &Model::foodChangeSucceded, this, [&model, administrationView] {
         QMessageBox::information(administrationView, tr("Food change success"),
                                  tr("the table is going to be refreshed"), QMessageBox::StandardButton::Ok);
         model.completeListRequest();

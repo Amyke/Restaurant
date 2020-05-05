@@ -6,6 +6,11 @@ Client::Client(QObject *parent) : IClient(parent), socket_(new QTcpSocket(this))
     connect(socket_, &QTcpSocket::connected, this, &Client::onConnected);
     connect(socket_, &QTcpSocket::readyRead, this, &Client::onReadyRead);
     connect(protocol_, &Protocol::messageArrived, this, &Client::messageArrived);
+    connect(socket_, qOverload<QTcpSocket::SocketError>(&QTcpSocket::error), [this](QTcpSocket::SocketError error) {
+        if (error == QTcpSocket::SocketError::ConnectionRefusedError) {
+            connectionLost();
+        }
+    });
     connect(socket_, &QTcpSocket::disconnected, this, &Client::connectionLost);
 }
 
@@ -49,6 +54,25 @@ void Client::send(MessagePtr msg) {
         break;
     case MessageId::NotificationOrders:
         protocol_->sendMessage(static_cast<const NotificationOrdersMessage &>(*msg));
+        break;
+    case MessageId::OrderStatusChangeRequest:
+        protocol_->sendMessage(static_cast<const OrderStatusChangeRequestMessage &>(*msg));
+        break;
+    case MessageId::OrderStatusChangeReply:
+        protocol_->sendMessage(static_cast<const OrderStatusChangeReplyMessage &>(*msg));
+        break;
+    case MessageId::CompleteFoodRequest:
+        protocol_->sendMessage(static_cast<const CompleteFoodRequestMessage &>(*msg));
+        break;
+    case MessageId::CompleteFoodReply:
+        protocol_->sendMessage(static_cast<const CompleteFoodReplyMesage &>(*msg));
+        break;
+    case MessageId::OrderArrivedRequest:
+        protocol_->sendMessage(static_cast<const OrderArrivedRequestMessage &>(*msg));
+        break;
+    case MessageId::OrderArrivedReply:
+        protocol_->sendMessage(static_cast<const OrderArrivedReplyMessage &>(*msg));
+        break;
     }
 }
 

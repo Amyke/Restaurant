@@ -11,15 +11,14 @@
 
 #include <QtCore/QAbstractTableModel>
 
-#include "Model.hpp"
 #include "EndWidget.hpp"
 #include "LoginWidget.hpp"
+#include "Model.hpp"
 #include "OrderWidget.hpp"
 #include "PayWidget.hpp"
 #include "WelcomeWidget.hpp"
 
-MainWidget::MainWidget(QWidget *parent)
-    : QStackedWidget(parent), model(new Model(new Client(this), this)) {
+MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Model(new Client(this), this)) {
 
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Restaurant", "menu");
     auto hostName = settings.value("serverHost", "localhost").toString();
@@ -65,14 +64,13 @@ MainWidget::MainWidget(QWidget *parent)
     addWidget(networkErrorWidget);
     setCurrentWidget(networkErrorWidget);
 
-    connect(model, &Model::connectionStateChanged, this,
-            [this, networkErrorWidget, loginWindow](bool isOnline) {
-                if (!isOnline) {
-                    setCurrentWidget(networkErrorWidget);
-                } else {
-                    setCurrentWidget(loginWindow);
-                }
-            });
+    connect(model, &Model::connectionStateChanged, this, [this, networkErrorWidget, loginWindow](bool isOnline) {
+        if (!isOnline) {
+            setCurrentWidget(networkErrorWidget);
+        } else {
+            setCurrentWidget(loginWindow);
+        }
+    });
     connect(model, &Model::loginFailed, this, [this] {
         QMessageBox::critical(this, tr("Login error"), tr("The supplied username or password was incorrect"));
     });

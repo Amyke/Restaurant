@@ -10,7 +10,7 @@
 #include <algorithm>
 
 FoodModel::FoodModel(QObject *parent) : QAbstractTableModel(parent) {
-    listFoods = {{1, "Kaja", 1, 2, true}};
+    listFoods = {{{1, "Kaja", 1, 2}, true}};
     foodChanges = listFoods;
 }
 
@@ -108,7 +108,7 @@ bool FoodModel::insertRows(int row, int count, const QModelIndex &parent) {
       
     beginInsertRows(QModelIndex(), row, row);
 
-    foodChanges.push_back({0, "EditMe", 0, 0, false});
+    foodChanges.push_back({{0, "EditMe", 0, 0}, false});
 
     endInsertRows();
     return true;

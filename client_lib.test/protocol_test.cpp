@@ -45,8 +45,8 @@ private slots:
     }
 
     void SendMoreMessage() {
-        LoginRequestMessage msg1("ûû", "12c");
-        LoginRequestMessage msg2("ááá", "11c");
+        LoginRequestMessage msg1("Å±Å±", "12c");
+        LoginRequestMessage msg2("Ã¡Ã¡Ã¡", "11c");
         protocol_->sendMessage(msg1);
         protocol_->sendMessage(msg2);
         buffer_->seek(0);

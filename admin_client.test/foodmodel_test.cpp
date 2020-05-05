@@ -28,7 +28,7 @@ private slots:
     }
     void SetDataSimulate() {
         std::vector<Food> foodList;
-        foodList.push_back({1, "Kaja", 1, 2, true});
+        foodList.push_back({{1, "Kaja", 1, 2}, true});
         foods_->setFoodList(foodList);
 
         QCOMPARE(1, foods_->rowCount());
@@ -37,21 +37,21 @@ private slots:
     void DeltaSimulateInsert() {
 
         std::vector<Food> foodList;
-        foodList.push_back({1, "Kaja", 1, 2, true});
+        foodList.push_back({{1, "Kaja", 1, 2}, true});
         foods_->setFoodList(foodList);
 
         foods_->insertRow(foods_->rowCount());
 
         auto newFood = foods_->computeDelta();
 
-        Food insretrowData = {0, "EditMe", 0, 0, false};
+        Food insretrowData = {{0, "EditMe", 0, 0}, false};
         auto inserted = newFood.CreatedFoods[0];
 
         QCOMPARE(inserted.FoodData.FoodId, insretrowData.FoodData.FoodId);
     }
     void DeltaSimulateModified() {
         std::vector<Food> foodList;
-        foodList.push_back({1, "Kaja", 1, 2, true});
+        foodList.push_back({{1, "Kaja", 1, 2}, true});
         foods_->setFoodList(foodList);
 
         foods_->setData(foods_->index(0, 0), QString("Palacsinta"));
@@ -65,14 +65,14 @@ private slots:
 
     void DeltaInsertAndModified() {
         std::vector<Food> foodList;
-        foodList.push_back({1, "Kaja", 1, 2, true});
+        foodList.push_back({{1, "Kaja", 1, 2}, true});
         foods_->setFoodList(foodList);
 
         foods_->insertRow(foods_->rowCount());
         foods_->insertRow(foods_->rowCount());
         foods_->setData(foods_->index(0, 0), QString("Palacsinta"));
 
-        Food insretrowData = {0, "EditMe", 0, 0, false};
+        Food insretrowData = {{0, "EditMe", 0, 0}, false};
 
         // Act
         auto newFood = foods_->computeDelta();
@@ -88,7 +88,7 @@ private slots:
     void ResetCahnges() {
 
         std::vector<Food> foodList;
-        foodList.push_back({1, "Kaja", 1, 2, true});
+        foodList.push_back({{1, "Kaja", 1, 2}, true});
         foods_->setFoodList(foodList);
 
         foods_->insertRow(foods_->rowCount());

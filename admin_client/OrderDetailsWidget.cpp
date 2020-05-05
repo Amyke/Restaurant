@@ -46,7 +46,7 @@ OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *paren
     mapper->revert();
 
     connect(mapper, &QDataWidgetMapper::currentIndexChanged, this,
-            [this, mapper, inProgressButton, completedButton, payedButton](int index) {
+            [mapper, inProgressButton, completedButton, payedButton](int index) {
                auto actualStatus = mapper->model()->index(index, 2).data(Qt::UserRole).value<OrderStatus>();
                 inProgressButton->setEnabled(actualStatus == OrderStatus::Pending);
                 completedButton->setEnabled(actualStatus == OrderStatus::InProgress);
