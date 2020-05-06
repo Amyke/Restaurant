@@ -2,6 +2,8 @@ _build*/
 Testing/
 server/bin/
 server/obj/
+restaurant-server.test/bin/
+restaurant-server.test/obj/
 communication_lib/bin/
 communication_lib/obj/
 communication_lib.test/bin/

@@ -107,5 +107,49 @@ namespace restaurant_server
             {
             };
         }
+        async Task<bool> IModel.FoodChange(Delta changes)
+        {
+           bool success=true;
+            return success;
+        }
+
+        async Task<OrderStatusChangeResult> IModel.StatusChange(UInt64 orderId, OrderStatus status)
+        {
+            bool success = true;
+            if(success)
+            {
+                return new OrderStatusChangeResult
+                {
+                    OrderId = orderId,
+                    Date = (UInt64)DateTime.Now.Ticks,
+                    NewStatus = status,
+                    Success = success
+                };
+            }
+            else
+            {
+                return new OrderStatusChangeResult {
+                    OrderId = orderId,
+                    Date = (UInt64)DateTime.Now.Ticks,
+                    NewStatus = status,
+                    Success = success
+                };
+            }
+        }
+
+        private OrderStatus handleStatusChange(OrderStatus status)
+        {
+            switch (status)
+            {
+                case OrderStatus.Pending:
+                    return OrderStatus.InProgress;
+                case OrderStatus.InProgress:
+                    return OrderStatus.Completed;
+                case OrderStatus.Completed:
+                    return OrderStatus.Payed;
+            }
+            throw new NotImplementedException();
+        }
+
     }
 }

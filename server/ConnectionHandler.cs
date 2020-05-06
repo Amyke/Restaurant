@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace restaurant_server
 {
-    class ConnectionHandler : IAsyncDisposable
+    internal class ConnectionHandler : IAsyncDisposable, IConnectionHandler
     {
         readonly ICommunication _communication;
         readonly CancellationToken _cancellation;
@@ -47,7 +47,7 @@ namespace restaurant_server
             _pendingClients.Add(new PendingClient(e, _model, this));
         }
 
-        private async void OnMessageArrivedAsync(object? sender, Message e)
+        public async void OnMessageArrivedAsync(object? sender, Message e)
         {
             IClient? client = sender as IClient;
             if (client == null)

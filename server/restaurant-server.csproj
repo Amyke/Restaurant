@@ -8,6 +8,13 @@
     <RootNamespace>restaurant_server</RootNamespace>
   </PropertyGroup>
 
+<ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>$(AssemblyName).test</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
   <ItemGroup>
     <ProjectReference Include="..\communication_lib\communication_lib.csproj" />
   </ItemGroup>

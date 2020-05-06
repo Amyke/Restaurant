@@ -2,20 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace restaurant_server
 {
-    class AdminClient
+    internal class AdminClient
     {
-        private readonly ConnectionHandler _connectionHandler;
+        private readonly IConnectionHandler _connectionHandler;
         private readonly IModel _model;
         public IClient IClient { get; internal set; }
         public string Name { get; internal set; }
 
-        public AdminClient(IClient client, string name, IModel model, ConnectionHandler connectionHandler)
+        public AdminClient(IClient client, string name, IModel model, IConnectionHandler connectionHandler)
         {
             _connectionHandler = connectionHandler;
             _model = model;
@@ -51,7 +53,6 @@ namespace restaurant_server
                         await HandleOrderStatusChangeRequest(msg, cancellation);
                         break;
                     }
-
                 case MessageId.LoginRequest:
                 case MessageId.LoginReply:
                 case MessageId.FoodListRequest:
@@ -89,10 +90,13 @@ namespace restaurant_server
         private async Task HandleFoodChangeRequest(FoodChangeRequestMessage msg, CancellationToken cancellation)
         {
             //model-> success delta change (bool)
-            bool success = true;
+            bool success = await _model.FoodChange(msg.Changes);
             if (success)
             {
-                await IClient.Send(new FoodChangeReplyMessage { Status = FoodChangeStatus.Success }, cancellation);
+                await _connectionHandler.BroadcastToAdmins(new FoodChangeReplyMessage
+                { 
+                    Status = FoodChangeStatus.Success
+                });
             }
             else
             {
@@ -101,32 +105,37 @@ namespace restaurant_server
         }
         private async Task HandleOrderStatusChangeRequest(OrderStatusChangeRequestMessage msg, CancellationToken cancellation)
         {
-            UInt64 date = Convert.ToUInt64(DateTime.Now);
-
             //model->update status
-            if (handleStatusChange(msg.Status) == msg.Status)
+            OrderStatusChangeResult result = await _model.StatusChange(msg.OrderId, msg.Status);
+
+
+            if (result.Success)
             {
-                await IClient.Send(new OrderStatusChangeReplyMessage { OrderId = msg.OrderId, Status = ReplyStatus.Success, NewStatus = msg.Status, Date = date }, cancellation);
-            }
-            else
+                await _connectionHandler.BroadcastToAdmins(new OrderStatusChangeReplyMessage
+                {
+                    OrderId = result.OrderId,
+                    Status = ReplyStatus.Success,
+                    NewStatus = result.NewStatus,
+                    Date = result.Date
+                });
+            }else
             {
-                await IClient.Send(new OrderStatusChangeReplyMessage { OrderId = msg.OrderId, Status = ReplyStatus.Success, NewStatus = msg.Status, Date = date }, cancellation);
+            await IClient.Send(new OrderStatusChangeReplyMessage { OrderId = result.OrderId, Status = ReplyStatus.Failed, NewStatus = result.NewStatus, Date = result.Date }, cancellation);
+
             }
+
         }
         private OrderStatus handleStatusChange(OrderStatus status)
         {
             // TODO: switch-case
-            if (status == OrderStatus.Pending)
+            switch (status)
             {
-                return OrderStatus.InProgress;
-            }
-            else if (status == OrderStatus.InProgress)
-            {
-                return OrderStatus.Completed;
-            }
-            else if (status == OrderStatus.Completed)
-            {
-                return OrderStatus.Payed;
+                case OrderStatus.Pending:
+                    return OrderStatus.InProgress;
+                case OrderStatus.InProgress:
+                    return OrderStatus.Completed;
+                case OrderStatus.Completed:
+                    return OrderStatus.Payed;
             }
             throw new NotImplementedException();
         }

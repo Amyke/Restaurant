@@ -6,31 +6,43 @@ using System.Threading.Tasks;
 
 namespace restaurant_server
 {
-    enum LoginResult
+    public enum LoginResult
     {
         Customer,
         Admin,
         Deny
     }
 
-    struct PayResult
+    public struct PayResult
     {
         public bool Success { get; set; }
         public Orders? Order { get; set; }
     }
 
-    struct OrderResult
+    public struct OrderResult
     {
         public bool Success { get; set; }
         public Orders? Order { get; set; }
     }
 
-    interface IModel
+    public struct OrderStatusChangeResult
+    {
+        public UInt64 OrderId { get; set; }
+        public bool Success { get; set; }
+        public OrderStatus NewStatus { get; set; }
+        public UInt64 Date { get; set; }
+    }
+
+    public interface IModel
     {
         Task<LoginResult> Login(string name, string password);
         Task<IEnumerable<Food>> ListFoods(bool visibleOnly);
         Task<OrderResult> AddOrder(string name, List<FoodAmount> orderedfood);
         Task<PayResult> TryPay(string tableId);
         Task<IEnumerable<Orders>> ListOrders(DateTime from, DateTime to);
+
+        Task<bool> FoodChange(Delta changes);
+
+        Task<OrderStatusChangeResult> StatusChange(UInt64 orderId, OrderStatus status);
     }
 }

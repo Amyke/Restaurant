@@ -53,6 +53,8 @@ if(CMAKE_GENERATOR MATCHES "^Visual Studio .*$")
   add_subdirectory(communication_lib.IntegrationTest)
 
   add_subdirectory(server)
+
+  add_subdirectory(restaurant-server.test)
 endif()
 
 add_subdirectory(client_lib)

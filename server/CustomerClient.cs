@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace restaurant_server
 {
-    class CustomerClient
+    internal class CustomerClient
     {
-        private readonly ConnectionHandler _connectionHandler;
+        private readonly IConnectionHandler _connectionHandler;
         private readonly IModel _model;
         public IClient IClient { get; internal set; }
 
         public string Name { get; internal set; }
 
-        public CustomerClient(IClient client, string name, IModel model, ConnectionHandler connectionHandler)
+        public CustomerClient(IClient client, string name, IModel model, IConnectionHandler connectionHandler)
         {
             _connectionHandler = connectionHandler;
             _model = model;

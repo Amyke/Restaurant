@@ -7,14 +7,14 @@ using communication_lib;
 
 namespace restaurant_server
 {
-    class PendingClient
+    internal class PendingClient
     {
-        private readonly ConnectionHandler _connectionHandler;
+        private readonly IConnectionHandler _connectionHandler;
         private readonly IModel _model;
 
         public IClient IClient { get; internal set; }
 
-        public PendingClient(IClient client, IModel model, ConnectionHandler connectionHandler)
+        public PendingClient(IClient client, IModel model, IConnectionHandler connectionHandler)
         {
             _connectionHandler = connectionHandler;
             _model = model;
