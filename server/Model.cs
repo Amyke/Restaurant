@@ -1,7 +1,9 @@
 ﻿using communication_lib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +17,7 @@ namespace restaurant_server
 
         async Task<LoginResult> IModel.Login(string name, string password)
         {
+            //SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
             if (name == "Table")
             {
                 return LoginResult.Customer;

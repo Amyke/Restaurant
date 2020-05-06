@@ -1,14 +1,13 @@
 ﻿using communication_lib;
-using MessagePack;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using restaurant_server.Persistence;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace restaurant_server
 {
@@ -16,7 +15,19 @@ namespace restaurant_server
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            using var host = await CreateHostBuilder(args).StartAsync();
+            var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<Program>();
+
+            logger.LogInformation("Hello World!");
+
+            var dbContext = host.Services.GetRequiredService<RestaurantContext>();
+            await dbContext.Database.MigrateAsync();
+
+            //using (var trx = await dbContext.Database.BeginTransactionAsync())
+            //{
+            //    dbContext.AddRangeAsync(new User { }, new Food { });
+            //}
 
             var comm = new Communication(new IPEndPoint(IPAddress.Any, 9007));
             CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -31,16 +42,35 @@ namespace restaurant_server
                 };
                 try
                 {
-                    Console.WriteLine("Listening...");
+                    logger.LogInformation("Listening...");
                     await comm.Listen(_cancellation);
                 }
-                catch(OperationCanceledException)
+                catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Listen finished");
+                    logger.LogInformation("Listen finished");
+                }
+                catch(Exception e)
+                {
+                    logger.LogCritical(e, "Unhandled exception");
                 }
             }
 
-            Console.WriteLine("Goodbye cruel world");
+            logger.LogInformation("Goodbye cruel world");
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args).ConfigureServices(services =>
+            {
+                services.AddDbContext<RestaurantContext>(options =>
+                {
+                    options.UseNpgsql("Host=localhost;Port=5432;Database=restaurant;Username=postgres;Password=admin");
+                });
+                services.AddLogging(builder =>
+                {
+                    builder.AddConsole();
+                });
+            });
         }
     }
 }
