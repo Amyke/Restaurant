@@ -105,14 +105,15 @@ namespace restaurant_server.test
                         FoodPrice = 250
                     }
                 },
-                OrderDate = (UInt64)DateTime.Now.Ticks,
+                OrderDate = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 TableId = "Table",
                 Status = OrderStatus.Pending
                 }
             };
 
             _model
-                .Setup(m => m.ListOrders(It.IsAny<DateTime>(), It.IsAny<DateTime>())).Returns((DateTime from, DateTime to) =>
+                .Setup(m => m.ListOrders(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .Returns((DateTimeOffset from, DateTimeOffset to) =>
                {
                    return Task.FromResult<IEnumerable<Orders>>(expectedOrder);
                });
@@ -214,31 +215,27 @@ namespace restaurant_server.test
             // Arrange
             var expectedChange = new OrderStatusChangeResult
             {
-                OrderId = 0,
-                Date = (UInt64)DateTime.Now.Ticks,
+                OrderId = 42,
+                Date = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 NewStatus = OrderStatus.InProgress,
                 Success = false
             };
             _model
-                .Setup(m => m.StatusChange(It.IsAny<UInt64>(), It.IsAny<OrderStatus>())).Returns((UInt64 orderId, OrderStatus status) =>
+                .Setup(m => m.StatusChange(It.IsAny<UInt64>(), It.IsAny<OrderStatus>()))
+                .Returns((UInt64 orderId, OrderStatus status) =>
                 {
                     return Task.FromResult(expectedChange);
                 });
-            var expected = new OrderStatusChangeReplyMessage
-            {
-                OrderId = expectedChange.OrderId.Value,
-                Date = expectedChange.Date.Value,
-                NewStatus = expectedChange.NewStatus.Value,
-                Status = ReplyStatus.Failed
-            };
 
             // Act
-            await _client.HandleMessage(new OrderStatusChangeRequestMessage { }, _tokenSource.Token);
+            await _client.HandleMessage(new OrderStatusChangeRequestMessage { OrderId = 42, Status = OrderStatus.Payed }, _tokenSource.Token);
 
             // Assert
             _IClient
                 .Verify(c => c.Send(It.Is<OrderStatusChangeReplyMessage>(msg =>
-                    TestHelper.OrderChangeAreEqual(expected).Invoke(msg))
+                    msg.OrderId == expectedChange.OrderId
+                    && msg.NewStatus == OrderStatus.Payed
+                    && msg.Status == ReplyStatus.Failed)
                 , _tokenSource.Token));
 
             _connectionHandler.VerifyNoOtherCalls();
@@ -260,8 +257,8 @@ namespace restaurant_server.test
             new FoodChangeReplyMessage{ },
             new OrderStatusChangeReplyMessage{ }
 
-        };     
-        [Test] 
+        };
+        [Test]
         public async Task UnhandledMessages_AreNotHandled([ValueSource(nameof(unhandledMessages))] Message msg)
         {
             await _client.HandleMessage(msg, _tokenSource.Token);

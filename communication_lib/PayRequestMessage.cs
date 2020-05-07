@@ -10,5 +10,8 @@ namespace communication_lib
     {
         [IgnoreMember]
         MessageId Message.Id => MessageId.PayRequest;
+
+        [Key(0)]
+        public UInt64 OrderId { get; set; }
     }
 }

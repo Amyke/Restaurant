@@ -15,6 +15,8 @@ char *toString(OrderStatus status) {
         return toString("Completed");
     case OrderStatus::Payed:
         return toString("Payed");
+    case OrderStatus::PayIntent:
+        return toString("PayIntent");
     }
     return toString(QString("<INVALID>(%1)").arg(static_cast<std::underlying_type_t<OrderStatus>>(status)));
 }

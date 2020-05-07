@@ -38,7 +38,7 @@ namespace restaurant_server
         Task<LoginResult> Login(string name, string password);
         Task<IEnumerable<Food>> ListFoods(bool visibleOnly);
         Task<OrderResult> AddOrder(string name, List<FoodAmount> orderedfood);
-        Task<PayResult> TryPay(string tableId);
+        Task<PayResult> TryPay(UInt64 orderId, string tableId);
         Task<IEnumerable<Orders>> ListOrders(DateTimeOffset from, DateTimeOffset to);
 
         Task<bool> FoodChange(Delta changes);

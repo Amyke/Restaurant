@@ -133,19 +133,5 @@ namespace restaurant_server
             }
 
         }
-        private OrderStatus handleStatusChange(OrderStatus status)
-        {
-            // TODO: switch-case
-            switch (status)
-            {
-                case OrderStatus.Pending:
-                    return OrderStatus.InProgress;
-                case OrderStatus.InProgress:
-                    return OrderStatus.Completed;
-                case OrderStatus.Completed:
-                    return OrderStatus.Payed;
-            }
-            throw new NotImplementedException();
-        }
     }
 }

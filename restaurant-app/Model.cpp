@@ -116,7 +116,12 @@ void Model::paySend() {
         return;
     }
 
-    auto msg = QSharedPointer<PayRequestMessage>::create();
+    if (!activeOrderId_) {
+        qWarning() << __FUNCTION__ << "called without active order";
+        return;
+    }
+
+    auto msg = QSharedPointer<PayRequestMessage>::create(*activeOrderId_);
     client->send(msg);
 }
 
@@ -168,7 +173,7 @@ void Model::handleLoginReply(const LoginReplyMessage &msg) {
 
     switch (msg.Status) {
     case LoginStatus::Ok:
-        ActualStateChange(actualState);
+        actualStateChange(actualState);
         loginSucceded();
         break;
     case LoginStatus::Error:
@@ -183,7 +188,7 @@ void Model::handleListFoodReply(const FoodListReplyMessage &msg) {
         return;
     }
 
-    ActualStateChange(actualState);
+    actualStateChange(actualState);
     availableFoods = msg.Foods;
     foodListRefreshed(availableFoods);
 }
@@ -195,7 +200,7 @@ void Model::handleOrderReply(const OrderReplyMessage &msg) {
     }
 
     if (!msg.OrderedFoods.empty()) {
-        ActualStateChange(actualState);
+        actualStateChange(actualState, msg.OrderId);
         orderSucceded(msg.OrderedFoods);
     } else {
         orderFailed();
@@ -210,7 +215,7 @@ void Model::handlePayReply(const PayReplyMessage &msg) {
 
     switch (msg.Status) {
     case PayStatus::Success:
-        ActualStateChange(actualState);
+        actualStateChange(actualState);
         paySucceded();
         break;
     case PayStatus::Failed:
@@ -219,7 +224,8 @@ void Model::handlePayReply(const PayReplyMessage &msg) {
     }
 }
 
-void Model::ActualStateChange(const State &state) {
+void Model::actualStateChange(State state, std::optional<std::uint64_t> activeOrderId) {
+    activeOrderId_ = activeOrderId;
 
     switch (state) {
     case State::WaitingForLogin:

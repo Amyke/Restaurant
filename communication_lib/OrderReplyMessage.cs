@@ -12,6 +12,9 @@ namespace communication_lib
         public MessageId Id => MessageId.OrderReply;
 
         [Key(0)]
+        public UInt64 OrderId { get; set; }
+
+        [Key(1)]
         public List<FoodContains> Orderedfoods { get; set; } = new List<FoodContains>();
     }
 }

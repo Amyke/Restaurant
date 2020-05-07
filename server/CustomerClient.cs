@@ -72,6 +72,7 @@ namespace restaurant_server
             {
                 await IClient.Send(new OrderReplyMessage
                 {
+                    OrderId = result.Order!.OrderId,
                     Orderedfoods = result.Order!.OrderedFoods
                 }, cancellation);
                 await _connectionHandler.BroadcastToAdmins(new NotificationOrdersMessage
@@ -90,7 +91,7 @@ namespace restaurant_server
 
         private async Task HandlePayRequestArrived(PayRequestMessage msg, CancellationToken cancellation)
         {
-            PayResult result = await _model.TryPay(Name);
+            PayResult result = await _model.TryPay(msg.OrderId, Name);
             if (result.Success)
             {
                 await IClient.Send(new PayReplyMessage { Status = PayStatus.Success }, cancellation);

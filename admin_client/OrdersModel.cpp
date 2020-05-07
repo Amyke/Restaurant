@@ -119,6 +119,8 @@ QString OrdersModel::orderStatusToString(OrderStatus status) const {
         return tr("In Progress");
     case OrderStatus::Completed:
         return tr("Completed");
+    case OrderStatus::PayIntent:
+        return tr("PayIntent");
     case OrderStatus::Payed:
         return tr("Payed");
     }

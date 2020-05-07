@@ -59,7 +59,7 @@ private:
     void handleOrderReply(const OrderReplyMessage &msg);
     void handlePayReply(const PayReplyMessage &msg);
 
-    void ActualStateChange(const State &state);
+    void actualStateChange(State state, std::optional<std::uint64_t> activeOrderId = std::nullopt);
 
 private:
     IClient *client;
@@ -69,6 +69,8 @@ private:
     State actualState = State::WaitingForLogin;
 
     std::vector<FoodContains> availableFoods;
+
+    std::optional<std::uint64_t> activeOrderId_;
 };
 
 #endif //! MODEL_HPP

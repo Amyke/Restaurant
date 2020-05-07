@@ -199,23 +199,24 @@ namespace restaurant_server.test
             };
 
             _model.
-                Setup(m => m.TryPay(It.IsAny<string>())).Returns((string success) =>
-                  {
-                      var result = new PayResult
-                      {
-                          Success = true,
-                          Order = expectedOrder
-                      };
-                      return Task.FromResult(result);
-                  });
+                Setup(m => m.TryPay(It.IsAny<UInt64>(), It.IsAny<string>()))
+                .Returns((UInt64 orderId, string success) =>
+                {
+                    var result = new PayResult
+                    {
+                        Success = true,
+                        Order = expectedOrder
+                    };
+                    return Task.FromResult(result);
+                });
 
             // Act
             await _client.HandleMessage(new PayRequestMessage(), _tokenSource.Token);
-            
+
             // Assert
             _IClient
                .Verify(c => c.Send(It.Is<PayReplyMessage>(msg =>
-                    msg.Status ==PayStatus.Success), _tokenSource.Token));
+                    msg.Status == PayStatus.Success), _tokenSource.Token));
 
             _connectionHandler
                 .Verify(ch => ch.BroadcastToAdmins(It.Is<NotificationOrdersMessage>(msg =>
@@ -249,7 +250,8 @@ namespace restaurant_server.test
             };
 
             _model.
-                Setup(m => m.TryPay(It.IsAny<string>())).Returns((string success) =>
+                Setup(m => m.TryPay(It.IsAny<UInt64>(), It.IsAny<string>()))
+                .Returns((UInt64 orderId, string success) =>
                 {
                     var result = new PayResult
                     {

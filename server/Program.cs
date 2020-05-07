@@ -1,5 +1,6 @@
 ﻿using communication_lib;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -60,17 +61,23 @@ namespace restaurant_server
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args).ConfigureServices(services =>
-            {
-                services.AddDbContext<RestaurantContext>(options =>
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(builder =>
                 {
-                    options.UseNpgsql("Host=localhost;Port=5432;Database=restaurant;Username=postgres;Password=admin");
-                });
-                services.AddLogging(builder =>
+                    //builder.AddJsonFile("");
+                })
+                .ConfigureServices(services =>
                 {
-                    builder.AddConsole();
+                   // services.Configuration;
+                    services.AddDbContext<RestaurantContext>(options =>
+                    {
+                        options.UseNpgsql("Host=localhost;Port=5432;Database=restaurant;Username=postgres;Password=admin");
+                    });
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddConsole();
+                    });
                 });
-            });
         }
     }
 }

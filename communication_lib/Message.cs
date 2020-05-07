@@ -31,7 +31,8 @@ namespace communication_lib
         Pending = 0,
         InProgress,
         Completed,
-        Payed
+        Payed,
+        PayIntent
     }
 
     [MessagePackObject]

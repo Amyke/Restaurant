@@ -171,15 +171,19 @@ private slots:
         model_->orderSend(std::vector<FoodAmount>{});
         QSignalSpy orderedSuccededSpy(model_, &Model::orderSucceded);
         QSignalSpy orderedFailedSpy(model_, &Model::orderFailed);
+        std::uint64_t expectedOrderId = 42;
 
         // Act
-        auto reply = std::vector<FoodContains>();
-        reply.push_back({32, "Gulyas", 7660, 2});
+        auto orderedFoods = std::vector<FoodContains>();
+        orderedFoods.push_back({32, "Gulyas", 7660, 2});
 
-        client_->emitMessageArrived(QSharedPointer<OrderReplyMessage>::create(reply));
+        client_->emitMessageArrived(QSharedPointer<OrderReplyMessage>::create(expectedOrderId, orderedFoods));
 
         // Assert
         QCOMPARE(orderedSuccededSpy.size(), 1);
+        auto actualFoods = orderedSuccededSpy[0][0].value<std::vector<FoodContains>>();
+        // TODO
+        // QCOMPARE(actualFoods, orderedFoods);
         QCOMPARE(orderedFailedSpy.size(), 0);
     }
     void payRequestSent() {
@@ -312,7 +316,7 @@ private slots:
         QSignalSpy orderedFailedSpy(model_, &Model::orderFailed);
 
         // Act
-        client_->emitMessageArrived(QSharedPointer<OrderReplyMessage>::create(std::vector<FoodContains>{}));
+        client_->emitMessageArrived(QSharedPointer<OrderReplyMessage>::create(0, std::vector<FoodContains>{}));
 
         // Assert
         QCOMPARE(orderedFailedSpy.size(), 1);
@@ -534,7 +538,7 @@ private:
     void Given_IOrderedFoods(std::vector<FoodAmount> foods = {{32, 2}}) {
         model_->orderSend(foods);
         client_->emitMessageArrived(
-            QSharedPointer<OrderReplyMessage>::create(std::vector<FoodContains>{{32, "Gulyas", 7660, 2}}));
+            QSharedPointer<OrderReplyMessage>::create(42, std::vector<FoodContains>{{32, "Gulyas", 7660, 2}}));
     }
     void Given_IPayed() {
         model_->paySend();

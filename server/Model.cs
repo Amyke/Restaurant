@@ -112,23 +112,45 @@ namespace restaurant_server
             };
         }
 
-        async Task<PayResult> IModel.TryPay(string tableId)
+        async Task<PayResult> IModel.TryPay(UInt64 orderId, string tableId)
         {
             //model engedélyezi-e -->success
             //model payrequestből csinál egy payrequestet amibe benne van az orderId
+            using var trx = await data.Database.BeginTransactionAsync();
+
+            var status = await data.Orders.FindAsync((int)orderId);
+            if (status.Status != Persistence.DbOrderStatus.Completed || status.Table.Name != tableId)
+            {
+                return new PayResult { Success = false };
+            }
+            status.Status = Persistence.DbOrderStatus.PayIntent;
+
+            await data.SaveChangesAsync();
+            await trx.CommitAsync();
+
+            List<FoodContains> foods = status.Foods.Select(x => new FoodContains
+            {
+                FoodId = (UInt32)x.Food.Id,
+                FoodName = x.Food.Name,
+                Amount = (UInt32)x.Amount,
+                FoodPrice = (UInt32)x.Food.Price
+            }).ToList();
+
 
             return new PayResult
             {
                 Success = false,
                 Order = new Orders
                 {
-                    TableId = tableId,
+                    TableId = status.Table.Name,
                     OrderDate = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                    OrderedFoods = new List<FoodContains>(),
-                    OrderId = 0,
-                    Status = OrderStatus.Completed
+                    OrderedFoods = foods,
+                    OrderId = (UInt32)status.Id,
+                    Status = OrderStatus.PayIntent
                 }
             };
+
+
         }
 
         async Task<IEnumerable<Orders>> IModel.ListOrders(DateTimeOffset from, DateTimeOffset to)
@@ -212,7 +234,10 @@ namespace restaurant_server
                 case (Persistence.DbOrderStatus.InProgress, OrderStatus.Completed):
                     order.Status = Persistence.DbOrderStatus.Completed;
                     break;
-                case (Persistence.DbOrderStatus.Completed, OrderStatus.Payed):
+                case (Persistence.DbOrderStatus.Completed, OrderStatus.PayIntent):
+                    order.Status = Persistence.DbOrderStatus.Payed;
+                    break;
+                case (Persistence.DbOrderStatus.PayIntent, OrderStatus.Payed):
                     order.Status = Persistence.DbOrderStatus.Payed;
                     break;
                 default:
@@ -239,6 +264,7 @@ namespace restaurant_server
                 Persistence.DbOrderStatus.Pending => OrderStatus.Pending,
                 Persistence.DbOrderStatus.InProgress => OrderStatus.InProgress,
                 Persistence.DbOrderStatus.Completed => OrderStatus.Completed,
+                Persistence.DbOrderStatus.PayIntent => OrderStatus.PayIntent,
                 Persistence.DbOrderStatus.Payed => OrderStatus.Payed,
                 _ => throw new NotImplementedException()
             };

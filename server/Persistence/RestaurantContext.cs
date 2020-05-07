@@ -95,7 +95,8 @@ namespace restaurant_server.Persistence
         Pending = 0,
         InProgress = 1,
         Completed = 2,
-        Payed = 3
+        Payed = 3,
+        PayIntent =4
     }
 
     public class Order

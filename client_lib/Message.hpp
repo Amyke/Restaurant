@@ -68,7 +68,7 @@ inline std::string_view to_string(MessageId id) {
     return "<INVALID>";
 }
 
-enum class OrderStatus : std::uint32_t { Pending, InProgress, Completed, Payed };
+enum class OrderStatus : std::uint32_t { Pending, InProgress, Completed, Payed, PayIntent };
 MSGPACK_ADD_ENUM(OrderStatus);
 
 struct FoodContains {
@@ -205,24 +205,32 @@ struct OrderRequestMessage final : Message {
 
 struct OrderReplyMessage final : Message {
     OrderReplyMessage() = default;
-    OrderReplyMessage(const std::vector<FoodContains> &orderedFoods) : OrderedFoods(orderedFoods) {
+    OrderReplyMessage(std::uint64_t orderId, const std::vector<FoodContains> &orderedFoods)
+        : OrderId(orderId), OrderedFoods(orderedFoods) {
     }
 
     MessageId id() const final {
         return MessageId::OrderReply;
     }
 
+    std::uint64_t OrderId;
     std::vector<FoodContains> OrderedFoods;
 
-    MSGPACK_DEFINE(OrderedFoods);
+    MSGPACK_DEFINE(OrderId, OrderedFoods);
 };
 
 struct PayRequestMessage final : Message {
     PayRequestMessage() = default;
+    PayRequestMessage(std::uint64_t orderId) : OrderId(orderId) {
+    }
 
     MessageId id() const final {
         return MessageId::PayRequest;
     }
+
+    std::uint64_t OrderId;
+
+    MSGPACK_DEFINE(OrderId);
 };
 
 struct PayReplyMessage final : Message {
