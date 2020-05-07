@@ -26,8 +26,10 @@ namespace communication_lib
 
         public async Task WriteMessage(Message msg, CancellationToken cancellation)
         {
-            await MessagePackSerializer.SerializeAsync(_stream, new MessageHeader { Id = msg.Id }, cancellationToken: cancellation);
-            await MessagePackSerializer.SerializeAsync(msg.GetType(), _stream, msg, cancellationToken: cancellation);
+            using var memory = new MemoryStream();
+            await MessagePackSerializer.SerializeAsync(memory, new MessageHeader { Id = msg.Id }, cancellationToken: cancellation);
+            await MessagePackSerializer.SerializeAsync(msg.GetType(), memory, msg, cancellationToken: cancellation);
+            await _stream.WriteAsync(memory.ToArray(), cancellationToken: cancellation);
         }
     }
 

@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,8 +33,9 @@ namespace communication_lib.test
         [Test]
         public async Task OneMessage()
         {
-            var expected = new LoginReplyMessage {
-                Status = LoginStatus.Error 
+            var expected = new LoginReplyMessage
+            {
+                Status = LoginStatus.Error
             };
 
             var cancellation = new CancellationTokenSource();
@@ -67,6 +69,42 @@ namespace communication_lib.test
             Assert.AreEqual(expected2.Status, actual2.Status);
             var actual3 = await ReceiveMessage<LoginReplyMessage>();
             Assert.AreEqual(expected3.Status, actual3.Status);
+        }
+
+        [Test]
+        public async Task SendManyMessagesAtOnce()
+        {
+            var expected1 = new LoginReplyMessage { Status = LoginStatus.Error };
+            var expected2 = new PayReplyMessage { Status = PayStatus.Success };
+            var expected3 = new OrderReplyMessage { Orderedfoods = new List<FoodContains>(), OrderId = 1 };
+            var expected4 = new LoginReplyMessage { Status = LoginStatus.Ok };
+            var expected5 = new OrderReplyMessage { Orderedfoods = new List<FoodContains>(), OrderId = 2 };
+            var expected6 = new PayReplyMessage { Status = PayStatus.Failed };
+            var expected7 = new OrderReplyMessage { Orderedfoods = new List<FoodContains>(), OrderId = 3 };
+            var expected = new Message[]
+            {
+                expected1, expected2, expected3, expected4, expected5, expected6, expected7
+            };
+
+            var cancellation = new CancellationTokenSource();
+            await Task.WhenAll(expected.Select(msg => _writer.WriteMessage(msg, cancellation.Token)));
+
+            _stream.Seek(0, SeekOrigin.Begin);
+
+            var actual1 = await ReceiveMessage<LoginReplyMessage>();
+            Assert.AreEqual(expected1.Status, actual1.Status);
+            var actual2 = await ReceiveMessage<PayReplyMessage>();
+            Assert.AreEqual(expected2.Status, actual2.Status);
+            var actual3 = await ReceiveMessage<OrderReplyMessage>();
+            Assert.AreEqual(expected3.OrderId, actual3.OrderId);
+            var actual4 = await ReceiveMessage<LoginReplyMessage>();
+            Assert.AreEqual(expected4.Status, actual4.Status);
+            var actual5 = await ReceiveMessage<OrderReplyMessage>();
+            Assert.AreEqual(expected5.OrderId, actual5.OrderId);
+            var actual6 = await ReceiveMessage<PayReplyMessage>();
+            Assert.AreEqual(expected6.Status, actual6.Status);
+            var actual7 = await ReceiveMessage<OrderReplyMessage>();
+            Assert.AreEqual(expected7.OrderId, actual7.OrderId);
         }
 
         [Test]

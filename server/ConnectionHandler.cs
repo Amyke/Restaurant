@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace restaurant_server
 {
@@ -13,16 +14,18 @@ namespace restaurant_server
         readonly ICommunication _communication;
         readonly CancellationToken _cancellation;
         private readonly IModel _model;
+        private readonly ILogger<ConnectionHandler> _logger;
 
         readonly List<PendingClient> _pendingClients = new List<PendingClient>();
         readonly List<AdminClient> _adminClients = new List<AdminClient>();
         readonly List<CustomerClient> _customerClients = new List<CustomerClient>();
 
-        public ConnectionHandler(ICommunication communication, IModel model, CancellationToken cancellation)
+        public ConnectionHandler(ICommunication communication, IModel model, CancellationToken cancellation, ILogger<ConnectionHandler> logger)
         {
             _communication = communication;
             _cancellation = cancellation;
             _model = model;
+            _logger = logger;
             _communication.ConnectionEstablished += OnConnectionEstablished;
         }
 
@@ -42,13 +45,26 @@ namespace restaurant_server
 
         private void OnConnectionEstablished(object? sender, IClient e)
         {
-            e.MessageArrived += OnMessageArrivedAsync;
+            _logger.LogDebug("Client connected: {}", e.Address);
+
+            e.MessageArrived += OnMessageArrived;
             e.ConnectionLost += OnConnectionLost;
             _pendingClients.Add(new PendingClient(e, _model, this));
         }
 
-        public async void OnMessageArrivedAsync(object? sender, Message e)
+        public async void OnMessageArrived(object? sender, Message e)
         {
+            _logger.LogDebug("Message arrived: {}", e.Id);
+            await Task.Factory.StartNew(
+                () => OnMessageArrivedAsync(sender, e),
+                _cancellation,
+                TaskCreationOptions.None,
+                TaskScheduler.Default);
+        }
+
+        private async Task OnMessageArrivedAsync(object? sender, Message e)
+        {
+
             IClient? client = sender as IClient;
             if (client == null)
             {
@@ -88,6 +104,7 @@ namespace restaurant_server
 
         public async Task BroadcastToAdmins(Message msg)
         {
+            _logger.LogDebug("BroadcastToAdmins: {}", msg.Id);
             await Task.WhenAll(_adminClients.Select(c => c.IClient.Send(msg, _cancellation)));
         }
 
@@ -95,7 +112,9 @@ namespace restaurant_server
         {
             if (sender is IClient client)
             {
-                client.MessageArrived -= OnMessageArrivedAsync;
+                _logger.LogDebug("Connection lost: {}", client.Address);
+
+                client.MessageArrived -= OnMessageArrived;
                 client.ConnectionLost -= OnConnectionLost;
 
                 _pendingClients.RemoveAll(c => c.IClient == client);

@@ -33,8 +33,8 @@ namespace restaurant_server
             var comm = new Communication(new IPEndPoint(IPAddress.Any, 9007));
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken _cancellation = tokenSource.Token;
-            Model model = new Model(dbContext);
-            await using (var connectionHandler = new ConnectionHandler(comm, model, _cancellation))
+            Model model = new Model(() => host.Services.GetRequiredService<RestaurantContext>());
+            await using (var connectionHandler = new ConnectionHandler(comm, model, _cancellation, loggerFactory.CreateLogger<ConnectionHandler>()))
             {
                 Console.CancelKeyPress += (s, args) =>
                 {
@@ -50,7 +50,7 @@ namespace restaurant_server
                 {
                     logger.LogInformation("Listen finished");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     logger.LogCritical(e, "Unhandled exception");
                 }
@@ -68,14 +68,19 @@ namespace restaurant_server
                 })
                 .ConfigureServices(services =>
                 {
-                   // services.Configuration;
+                    // services.Configuration;
                     services.AddDbContext<RestaurantContext>(options =>
                     {
                         options.UseNpgsql("Host=localhost;Port=5432;Database=restaurant;Username=postgres;Password=admin");
-                    });
+                    }, ServiceLifetime.Transient);
                     services.AddLogging(builder =>
                     {
-                        builder.AddConsole();
+                        builder.AddConsole(console =>
+                        {
+                            console.IncludeScopes = false;
+                            console.TimestampFormat = "[HH:mm:ss] ";
+                        });
+                        builder.SetMinimumLevel(LogLevel.Debug);
                     });
                 });
         }

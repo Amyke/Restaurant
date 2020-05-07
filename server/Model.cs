@@ -14,15 +14,16 @@ namespace restaurant_server
 {
     class Model : IModel
     {
-        Persistence.RestaurantContext data;
+        Func<Persistence.RestaurantContext> _contextFactory;
 
-        public Model(Persistence.RestaurantContext database)
+        public Model(Func<Persistence.RestaurantContext> databaseContextFactory)
         {
-            data = database;
+            _contextFactory = databaseContextFactory;
         }
 
         async Task<LoginResult> IModel.Login(string name, string password)
         {
+            using var data = CreateDatabase();
             var pass = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
             var user = await data.Users.FirstOrDefaultAsync(u => u.Name == name);
             if (user != null && user.Password.SequenceEqual(pass))
@@ -36,6 +37,7 @@ namespace restaurant_server
 
         async Task<IEnumerable<Food>> IModel.ListFoods(bool visibleOnly)
         {
+            using var data = CreateDatabase();
             return await data.FoodAmounts
                 .Where(f => !visibleOnly || f.Food.Visible)
                 .Select(f => new Food
@@ -54,6 +56,7 @@ namespace restaurant_server
 
         async Task<OrderResult> IModel.AddOrder(string name, List<FoodAmount> orderedfood)
         {
+            using var data = CreateDatabase();
             using var trx = await data.Database.BeginTransactionAsync();
             var user = await data.Users.FirstOrDefaultAsync(u => u.Name == name);
             if (user == null)
@@ -114,6 +117,7 @@ namespace restaurant_server
 
         async Task<PayResult> IModel.TryPay(UInt64 orderId, string tableId)
         {
+            using var data = CreateDatabase();
             //model engedélyezi-e -->success
             //model payrequestből csinál egy payrequestet amibe benne van az orderId
             using var trx = await data.Database.BeginTransactionAsync();
@@ -139,7 +143,7 @@ namespace restaurant_server
 
             return new PayResult
             {
-                Success = false,
+                Success = true,
                 Order = new Orders
                 {
                     TableId = status.Table.Name,
@@ -162,6 +166,7 @@ namespace restaurant_server
                 to = tmp;
             }
 
+            using var data = CreateDatabase();
             return await data.Orders
                 .Where(o => from <= o.Date && o.Date <= to)
                 .Select(item => new Orders
@@ -181,6 +186,7 @@ namespace restaurant_server
         }
         async Task<bool> IModel.FoodChange(Delta changes)
         {
+            using var data = CreateDatabase();
             using var trx = await data.Database.BeginTransactionAsync();
 
             var modifiedFoods = new List<Persistence.FoodAmount>();
@@ -219,6 +225,7 @@ namespace restaurant_server
 
         async Task<OrderStatusChangeResult> IModel.StatusChange(UInt64 orderId, OrderStatus status)
         {
+            using var data = CreateDatabase();
             using var trx = await data.Database.BeginTransactionAsync();
             var order = data.Orders.Find((int)orderId);
             if (order == null)
@@ -256,6 +263,8 @@ namespace restaurant_server
                 NewStatus = status
             };
         }
+
+        private Persistence.RestaurantContext CreateDatabase() => _contextFactory.Invoke();
 
         private static OrderStatus fromDb(Persistence.DbOrderStatus status)
         {
