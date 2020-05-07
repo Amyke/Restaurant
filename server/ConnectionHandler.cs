@@ -98,7 +98,7 @@ namespace restaurant_server
             }
             else
             {
-                // error
+                _logger.LogError("No such client: {}", client.Address);
             }
         }
 
@@ -106,6 +106,17 @@ namespace restaurant_server
         {
             _logger.LogDebug("BroadcastToAdmins: {}", msg.Id);
             await Task.WhenAll(_adminClients.Select(c => c.IClient.Send(msg, _cancellation)));
+        }
+
+        public async Task SendToCustomer(string tableId, Message msg)
+        {
+            var client = _customerClients.SingleOrDefault(x => x.Name == tableId);
+            if(client == null)
+            {
+                _logger.LogError("Client is not connected: {}", tableId);
+                return;
+            }
+            await client.IClient.Send(msg, _cancellation);
         }
 
         private void OnConnectionLost(object? sender, EventArgs e)

@@ -175,13 +175,27 @@ namespace restaurant_server.test
         [Test]
         public async Task OrderStatusChangeRequest_Successful()
         {
+
             // Arrange
             var expectedChange = new OrderStatusChangeResult
             {
-                OrderId = 0,
-                Date = (UInt64)DateTime.Now.Ticks,
-                NewStatus = OrderStatus.InProgress,
-                Success = true
+                Success = true,
+                Order = new Orders
+                {
+                    OrderId = 0,
+                    TableId = "Table",
+                    OrderDate = (UInt64)DateTime.Now.Ticks,
+                    Status = OrderStatus.InProgress,
+                    OrderedFoods = new List<FoodContains> {                    
+                        new FoodContains
+                        {
+                            FoodId = 0,
+                            FoodName = "Bundáskenyér",
+                            Amount = 5,
+                            FoodPrice = 250
+                        }
+                    }
+                }
             };
             _model
                 .Setup(m => m.StatusChange(It.IsAny<UInt64>(), It.IsAny<OrderStatus>())).Returns((UInt64 orderId, OrderStatus status) =>
@@ -195,15 +209,19 @@ namespace restaurant_server.test
             // Assert
             var expected = new OrderStatusChangeReplyMessage
             {
-                OrderId = expectedChange.OrderId.Value,
-                Date = expectedChange.Date.Value,
-                NewStatus = expectedChange.NewStatus.Value,
+                OrderId = expectedChange.Order.OrderId,
+                Date = expectedChange.Order.OrderDate,
+                NewStatus = expectedChange.Order.Status,
                 Status = ReplyStatus.Success
             };
 
             _connectionHandler
                 .Verify(ch => ch.BroadcastToAdmins(It.Is<OrderStatusChangeReplyMessage>(msg =>
                     TestHelper.OrderChangeAreEqual(expected).Invoke(msg)
+                )));
+            _connectionHandler
+                .Verify(ch => ch.SendToCustomer(It.IsAny<string>(), It.Is<NotificationOrdersMessage>( msg =>  
+                    msg.Order == expectedChange.Order
                 )));
 
             _IClient.VerifyNoOtherCalls();
@@ -215,9 +233,6 @@ namespace restaurant_server.test
             // Arrange
             var expectedChange = new OrderStatusChangeResult
             {
-                OrderId = 42,
-                Date = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                NewStatus = OrderStatus.InProgress,
                 Success = false
             };
             _model
@@ -233,7 +248,7 @@ namespace restaurant_server.test
             // Assert
             _IClient
                 .Verify(c => c.Send(It.Is<OrderStatusChangeReplyMessage>(msg =>
-                    msg.OrderId == expectedChange.OrderId
+                    msg.OrderId == 42
                     && msg.NewStatus == OrderStatus.Payed
                     && msg.Status == ReplyStatus.Failed)
                 , _tokenSource.Token));
@@ -252,7 +267,6 @@ namespace restaurant_server.test
             new PayRequestMessage{ },
             new PayReplyMessage{ },
             new OrderArrivedReplyMessage{ },
-            new NotificationOrdersMessage{ },
             new CompleteFoodReplyMessage{ },
             new FoodChangeReplyMessage{ },
             new OrderStatusChangeReplyMessage{ }

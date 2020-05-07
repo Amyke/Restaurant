@@ -19,14 +19,18 @@ public:
 
     void payFailed();
 
+    void setOrderStatus(OrderStatus status);
+
 signals:
     void payed();
 
 private:
-    QLabel *allPrice_;
-
     OrderModel *model_;
+    OrderStatus currentStatus_;
+
+    QLabel *statusLabel_;
     QPushButton *payButton_;
+    QLabel *allPrice_;
 };
 
 #endif //! PAYWIDGET_HPP

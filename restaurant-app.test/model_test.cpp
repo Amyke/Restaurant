@@ -36,6 +36,7 @@ signals:
 };
 
 Q_DECLARE_METATYPE(std::vector<FoodContains>);
+
 class ModelTest : public QObject {
     Q_OBJECT
 private slots:
@@ -186,13 +187,24 @@ private slots:
         // QCOMPARE(actualFoods, orderedFoods);
         QCOMPARE(orderedFailedSpy.size(), 0);
     }
-    void payRequestSent() {
+    void payRequestSentSuccessful() {
         // Arrange
         Given_ConnectedToServer();
         Given_IAmLoggedIn();
         Given_IHaveTheFoodList();
 
-        Given_IOrderedFoods();
+        auto orderId = Given_IOrderedFoods();
+        Orders orders = {orderId,
+                         "Table",
+                         {{0, "Palacsinta", 5, 250}},
+                         (uint64_t)QDateTime::currentDateTime,
+                         OrderStatus::InProgress};
+
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
+
+        orders.Status = OrderStatus::Completed;
+
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
         client_->messageSentSpy.clear();
 
         // Act
@@ -205,6 +217,8 @@ private slots:
         auto msg = params.front().value<MessagePtr>();
 
         QCOMPARE(msg->id(), MessageId::PayRequest);
+        auto payRequest = msg.staticCast<PayRequestMessage>();
+        QCOMPARE(payRequest->OrderId, 42);
     }
     void payRequestSucceded() {
         // Arrange
@@ -212,8 +226,15 @@ private slots:
         Given_IAmLoggedIn();
         Given_IHaveTheFoodList();
 
-        Given_IOrderedFoods();
-
+        auto orderId = Given_IOrderedFoods();
+        Orders orders = {orderId,
+                         "Table",
+                         {{0, "Palacsinta", 5, 250}},
+                         (uint64_t)QDateTime::currentDateTime,
+                         OrderStatus::InProgress};
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
+        orders.Status = OrderStatus::Completed;
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
         model_->paySend();
         QSignalSpy paySuccededSpy(model_, &Model::paySucceded);
         QSignalSpy payFailedSpy(model_, &Model::payFailed);
@@ -322,6 +343,21 @@ private slots:
         QCOMPARE(orderedFailedSpy.size(), 1);
         QCOMPARE(orderedSuccededSpy.size(), 0);
     }
+    void payRequestSentWrongOrderStatus() {
+        // Arrange
+        Given_ConnectedToServer();
+        Given_IAmLoggedIn();
+        Given_IHaveTheFoodList();
+
+        Given_IOrderedFoods();
+        client_->messageSentSpy.clear();
+
+        // Act
+        model_->paySend();
+
+        // Assert
+        QCOMPARE(client_->messageSentSpy.size(), 0);
+    }
 
     void payRequestFailed() {
         // Arrange
@@ -329,7 +365,15 @@ private slots:
         Given_IAmLoggedIn();
         Given_IHaveTheFoodList();
 
-        Given_IOrderedFoods();
+        auto orderId = Given_IOrderedFoods();
+        Orders orders = {orderId,
+                         "Table",
+                         {{0, "Palacsinta", 5, 250}},
+                         (uint64_t)QDateTime::currentDateTime,
+                         OrderStatus::InProgress};
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
+        orders.Status = OrderStatus::Completed;
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
 
         QSignalSpy paySuccededSpy(model_, &Model::paySucceded);
         QSignalSpy payFailedSpy(model_, &Model::payFailed);
@@ -535,12 +579,25 @@ private:
         model_->listFoodRequest();
         client_->emitMessageArrived(QSharedPointer<FoodListReplyMessage>::create(foods));
     }
-    void Given_IOrderedFoods(std::vector<FoodAmount> foods = {{32, 2}}) {
+    std::uint64_t Given_IOrderedFoods(std::vector<FoodAmount> foods = {{32, 2}}) {
         model_->orderSend(foods);
+        std::uint64_t orderId = 42;
         client_->emitMessageArrived(
-            QSharedPointer<OrderReplyMessage>::create(42, std::vector<FoodContains>{{32, "Gulyas", 7660, 2}}));
+            QSharedPointer<OrderReplyMessage>::create(orderId, std::vector<FoodContains>{{32, "Gulyas", 7660, 2}}));
+        return orderId;
     }
-    void Given_IPayed() {
+    void Given_IPayed(std::uint64_t orderId = 42) {
+        Orders orders = {orderId,
+                         "Table",
+                         {{0, "Palacsinta", 5, 250}},
+                         (uint64_t)QDateTime::currentDateTime,
+                         OrderStatus::InProgress};
+
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
+
+        orders.Status = OrderStatus::Completed;
+
+        client_->emitMessageArrived(QSharedPointer<NotificationOrdersMessage>::create(orders));
         model_->paySend();
         client_->emitMessageArrived(QSharedPointer<PayReplyMessage>::create(PayStatus::Success));
     }

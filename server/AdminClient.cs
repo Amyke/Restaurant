@@ -114,11 +114,15 @@ namespace restaurant_server
                 await _connectionHandler.BroadcastToAdmins(new OrderStatusChangeReplyMessage
                 {
 #pragma warning disable CS8629 // Nullable value type may be null.
-                    OrderId = result.OrderId.Value,
+                    OrderId = result.Order!.OrderId,
                     Status = ReplyStatus.Success,
-                    NewStatus = result.NewStatus.Value,
-                    Date = result.Date.Value
+                    NewStatus = result.Order!.Status,
+                    Date = result.Order!.OrderDate
 #pragma warning restore CS8629 // Nullable value type may be null.
+                });
+                await _connectionHandler.SendToCustomer(result.Order!.TableId, new NotificationOrdersMessage
+                {
+                    Order = result.Order!
                 });
             }
             else

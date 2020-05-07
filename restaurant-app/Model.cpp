@@ -121,6 +121,11 @@ void Model::paySend() {
         return;
     }
 
+    if (activeOrderStatus_ != OrderStatus::Completed) {
+        qWarning() << __FUNCTION__ << "wrong order state";
+        return;
+    }
+
     auto msg = QSharedPointer<PayRequestMessage>::create(*activeOrderId_);
     client->send(msg);
 }
@@ -147,13 +152,15 @@ void Model::handleMessageArrived(QSharedPointer<Message> msg) {
     case MessageId::PayReply:
         handlePayReply(static_cast<const PayReplyMessage &>(*msg));
         break;
+    case MessageId::NotificationOrders:
+        handleNotificationOrders(static_cast<const NotificationOrdersMessage &>(*msg));
+        break;
     case MessageId::LoginRequest:
     case MessageId::FoodListRequest:
     case MessageId::OrderRequest:
     case MessageId::PayRequest:
     case MessageId::FoodChangeRequest:
     case MessageId::FoodChangeReply:
-    case MessageId::NotificationOrders:
     case MessageId::CompleteFoodRequest:
     case MessageId::CompleteFoodReply:
     case MessageId::OrderArrivedRequest:
@@ -173,7 +180,7 @@ void Model::handleLoginReply(const LoginReplyMessage &msg) {
 
     switch (msg.Status) {
     case LoginStatus::Ok:
-        actualStateChange(actualState);
+        actualStateChange();
         loginSucceded();
         break;
     case LoginStatus::Error:
@@ -188,7 +195,7 @@ void Model::handleListFoodReply(const FoodListReplyMessage &msg) {
         return;
     }
 
-    actualStateChange(actualState);
+    actualStateChange();
     availableFoods = msg.Foods;
     foodListRefreshed(availableFoods);
 }
@@ -200,7 +207,8 @@ void Model::handleOrderReply(const OrderReplyMessage &msg) {
     }
 
     if (!msg.OrderedFoods.empty()) {
-        actualStateChange(actualState, msg.OrderId);
+        actualStateChange(msg.OrderId);
+        activeOrderStatus_ = OrderStatus::Pending;
         orderSucceded(msg.OrderedFoods);
     } else {
         orderFailed();
@@ -215,7 +223,7 @@ void Model::handlePayReply(const PayReplyMessage &msg) {
 
     switch (msg.Status) {
     case PayStatus::Success:
-        actualStateChange(actualState);
+        actualStateChange();
         paySucceded();
         break;
     case PayStatus::Failed:
@@ -224,15 +232,29 @@ void Model::handlePayReply(const PayReplyMessage &msg) {
     }
 }
 
-void Model::actualStateChange(State state, std::optional<std::uint64_t> activeOrderId) {
+void Model::handleNotificationOrders(const NotificationOrdersMessage &msg) {
+    if (actualState != State::WaitingForPayIntent) {
+        qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
+        return;
+    }
+
+    if (activeOrderId_ && *activeOrderId_ == msg.Order.OrderId) {
+        activeOrderStatus_ = msg.Order.Status;
+        statusChanged(msg.Order.Status);
+    }
+}
+
+void Model::actualStateChange(std::optional<std::uint64_t> activeOrderId) {
     activeOrderId_ = activeOrderId;
 
-    switch (state) {
+    switch (actualState) {
     case State::WaitingForLogin:
         actualState = State::TitleScreen;
+        activeOrderStatus_ = std::nullopt;
         break;
     case State::TitleScreen:
         actualState = State::WaitingForOrder;
+        activeOrderStatus_ = std::nullopt;
         break;
     case State::WaitingForOrder:
         actualState = State::WaitingForPayIntent;
@@ -240,6 +262,7 @@ void Model::actualStateChange(State state, std::optional<std::uint64_t> activeOr
         break;
     case State::WaitingForPayIntent:
         actualState = State::TitleScreen;
+        activeOrderStatus_ = std::nullopt;
         break;
     }
 }

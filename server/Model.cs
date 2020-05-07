@@ -258,9 +258,20 @@ namespace restaurant_server
             return new OrderStatusChangeResult
             {
                 Success = true,
-                OrderId = (UInt32)order.Id,
-                Date = (UInt64)order.Date.ToUnixTimeSeconds(),
-                NewStatus = status
+                Order = new Orders
+                {
+                    OrderId = (UInt64)order.Id,
+                    OrderDate = (UInt64)order.Date.ToUnixTimeSeconds(),
+                    Status = fromDb(order.Status),
+                    TableId = order.Table.Name,
+                    OrderedFoods = order.Foods.Select(f => new FoodContains
+                    {
+                        FoodId = (UInt32)f.FoodId,
+                        Amount = (UInt32)f.Amount,
+                        FoodName = f.Food.Name,
+                        FoodPrice = (UInt32)f.Food.Price
+                    }).ToList()
+                }
             };
         }
 

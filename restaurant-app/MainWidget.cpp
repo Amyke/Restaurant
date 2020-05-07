@@ -59,6 +59,9 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
         paywindow->setFoodList(foods);
         setCurrentWidget(paywindow);
     });
+
+    connect(model, &Model::statusChanged, this, [paywindow](OrderStatus status) { paywindow->setOrderStatus(status); });
+
     connect(model, &Model::paySucceded, this, [this, endwindow] { setCurrentWidget(endwindow); });
     connect(endwindow, &EndWidget::startAgain, this, [this, welcomeWindow] { setCurrentWidget(welcomeWindow); });
 

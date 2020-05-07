@@ -28,9 +28,7 @@ namespace restaurant_server
     public struct OrderStatusChangeResult
     {
         public bool Success { get; set; }
-        public UInt64? OrderId { get; set; }
-        public OrderStatus? NewStatus { get; set; }
-        public UInt64? Date { get; set; }
+        public Orders? Order { get; set; }
     }
 
     public interface IModel

@@ -47,6 +47,8 @@ signals:
     void paySucceded();
     void payFailed();
 
+    void statusChanged(OrderStatus status);
+
     void exited();
 
 private:
@@ -59,7 +61,9 @@ private:
     void handleOrderReply(const OrderReplyMessage &msg);
     void handlePayReply(const PayReplyMessage &msg);
 
-    void actualStateChange(State state, std::optional<std::uint64_t> activeOrderId = std::nullopt);
+    void handleNotificationOrders(const NotificationOrdersMessage &msg);
+
+    void actualStateChange(std::optional<std::uint64_t> activeOrderId = std::nullopt);
 
 private:
     IClient *client;
@@ -71,6 +75,7 @@ private:
     std::vector<FoodContains> availableFoods;
 
     std::optional<std::uint64_t> activeOrderId_;
+    std::optional<OrderStatus> activeOrderStatus_;
 };
 
 #endif //! MODEL_HPP
