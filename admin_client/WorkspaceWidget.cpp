@@ -13,16 +13,30 @@
 #include "OrderDetailsWidget.hpp"
 #include "OrdersModel.hpp"
 
+struct FilterOutPayedStatusProxyModel : QSortFilterProxyModel {
+    using QSortFilterProxyModel::QSortFilterProxyModel;
+
+protected:
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const final {
+        auto status = sourceModel()->index(source_row, 2).data(Qt::UserRole).value<OrderStatus>();
+        return status != OrderStatus::Payed;
+    }
+};
+
 WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(parent), model_(model) {
     ordersModel_ = new OrdersModel(this);
 
     auto orderListView = new QTableView;
-    orderListView->setModel(ordersModel_);
+    auto proxyModel = new FilterOutPayedStatusProxyModel(orderListView);
+    proxyModel->setSourceModel(ordersModel_);
+    orderListView->setModel(proxyModel);
+    orderListView->setSortingEnabled(true);
     orderListView->setColumnHidden(3, true);
     orderListView->setColumnHidden(4, true);
+    orderListView->sortByColumn(1, Qt::DescendingOrder);
 
     auto mapper = new QDataWidgetMapper(this);
-    mapper->setModel(ordersModel_);
+    mapper->setModel(proxyModel);
     mapper->toFirst();
 
     auto administrationView = new AdministrationWidget;
@@ -61,8 +75,8 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
                 orderDetailsView->orderChanged();
             });
 
-    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [this, mapper, &model] {
-        auto actualIndex = ordersModel_->index(mapper->currentIndex(), 4);
+    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [mapper, proxyModel, &model] {
+        auto actualIndex = proxyModel->index(mapper->currentIndex(), 4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::InProgress;
         model.orderStatusChangeRequest(orderId, status);
