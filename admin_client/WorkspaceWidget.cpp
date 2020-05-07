@@ -45,21 +45,24 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
         model.ordersListRequest(oneWeekAgo.toTime_t(), now.toTime_t());
     });
 
-    connect(&model, &Model::orderListArrived, this,
-            [this](const std::vector<Orders> &value) { ordersModel_->addOrders(value);
+    connect(&model, &Model::orderListArrived, this, [this, orderDetailsView](const std::vector<Orders> &value) {
+        ordersModel_->addOrders(value);
+        orderDetailsView->orderChanged();
     });
 
-    connect(&model, &Model::newOrderArrived, this,
-            [this](const Orders &value) { ordersModel_->addOrders({value}); });
+    connect(&model, &Model::newOrderArrived, this, [this, orderDetailsView](const Orders &value) {
+        ordersModel_->addOrders({value});
+        orderDetailsView->orderChanged();
+    });
 
     connect(orderListView->selectionModel(), &QItemSelectionModel::currentRowChanged, mapper,
-            [mapper](const QModelIndex &current, const auto &) {
-                // asd
+            [mapper, orderDetailsView](const QModelIndex &current, const auto &) {
                 mapper->setCurrentIndex(current.row());
+                orderDetailsView->orderChanged();
             });
 
-    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [orderListView, &model] {
-        auto actualIndex = orderListView->selectionModel()->currentIndex().siblingAtColumn(4);
+    connect(orderDetailsView, &OrderDetailsWidget::inProgress, this, [this, mapper, &model] {
+        auto actualIndex = ordersModel_->index(mapper->currentIndex(), 4);
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::InProgress;
         model.orderStatusChangeRequest(orderId, status);
@@ -79,8 +82,9 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     });
 
     connect(&model, &Model::orderStatusChangeSucceded, this,
-            [this](std::uint64_t orderId, OrderStatus status, std::uint64_t date) {
+            [this, orderDetailsView](std::uint64_t orderId, OrderStatus status, std::uint64_t date) {
                 ordersModel_->setStatus(orderId, status, date);
+                orderDetailsView->orderChanged();
             });
 
     connect(&model, &Model::foodListRefreshed, this, [this, administrationView](const std::vector<Food> &foodList) {
@@ -89,7 +93,7 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
     });
 
     connect(administrationView, &AdministrationWidget::changedFood, this,
-            [ &model](const Delta &value) { model.foodChangeRequest(value); });
+            [&model](const Delta &value) { model.foodChangeRequest(value); });
 
     connect(&model, &Model::foodChangeSucceded, this, [&model, administrationView] {
         QMessageBox::information(administrationView, tr("Food change success"),

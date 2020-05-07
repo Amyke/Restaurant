@@ -1,15 +1,15 @@
 #include "OrderDetailsWidget.hpp"
 
+#include <QtWidgets/QDataWidgetMapper>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QDataWidgetMapper>
 
-#include "RequestedFoodModel.hpp"
 #include "OrdersModel.hpp"
+#include "RequestedFoodModel.hpp"
 
-OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *parent) : QWidget(parent) {
+OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *parent) : QWidget(parent), mapper_(mapper) {
     orders_ = new RequestedFoodModel;
 
     auto layout = new QVBoxLayout;
@@ -26,37 +26,27 @@ OrderDetailsWidget::OrderDetailsWidget(QDataWidgetMapper *mapper, QWidget *paren
     labelLayout->addWidget(labelDate);
     labelLayout->addWidget(labelStatus, 0, Qt::AlignRight);
 
-    auto inProgressButton = new QPushButton(tr("In Progress"));
-    auto completedButton = new QPushButton(tr("Completed"));
-    auto payedButton = new QPushButton(tr("Payed"));
+    inProgressButton_ = new QPushButton(tr("In Progress"));
+    completedButton_ = new QPushButton(tr("Completed"));
+    payedButton_ = new QPushButton(tr("Payed"));
 
     layout->addLayout(labelLayout);
     layout->addWidget(selectedOrder);
-    layout->addWidget(inProgressButton);
-    layout->addWidget(completedButton);
-    layout->addWidget(payedButton);
+    layout->addWidget(inProgressButton_);
+    layout->addWidget(completedButton_);
+    layout->addWidget(payedButton_);
 
     setLayout(layout);
 
+    mapper_->addMapping(labelTableId, 0, "text");
+    mapper_->addMapping(labelDate, 1, "text");
+    mapper_->addMapping(labelStatus, 2, "text");
+    mapper_->addMapping(this, 3, "foodList");
+    mapper_->revert();
 
-    mapper->addMapping(labelTableId, 0, "text");
-    mapper->addMapping(labelDate, 1, "text");
-    mapper->addMapping(labelStatus, 2, "text");
-    mapper->addMapping(this, 3, "foodList");
-    mapper->revert();
-
-    connect(mapper, &QDataWidgetMapper::currentIndexChanged, this,
-            [mapper, inProgressButton, completedButton, payedButton](int index) {
-               auto actualStatus = mapper->model()->index(index, 2).data(Qt::UserRole).value<OrderStatus>();
-                inProgressButton->setEnabled(actualStatus == OrderStatus::Pending);
-                completedButton->setEnabled(actualStatus == OrderStatus::InProgress);
-                payedButton->setEnabled(actualStatus == OrderStatus::Completed);
-            });
-
-    connect(inProgressButton, &QPushButton::clicked, this, [this]{ 
-        inProgress(); });
-    connect(completedButton, &QPushButton::clicked, this, [this] { completed(); });
-    connect(payedButton, &QPushButton::clicked, this, [this] { payed(); });
+    connect(inProgressButton_, &QPushButton::clicked, this, [this] { inProgress(); });
+    connect(completedButton_, &QPushButton::clicked, this, [this] { completed(); });
+    connect(payedButton_, &QPushButton::clicked, this, [this] { payed(); });
 }
 
 std::vector<FoodContains> OrderDetailsWidget::foodList() const {
@@ -65,4 +55,11 @@ std::vector<FoodContains> OrderDetailsWidget::foodList() const {
 
 void OrderDetailsWidget::setFoodList(const std::vector<FoodContains> &value) {
     orders_->setFoodList(value);
+}
+
+void OrderDetailsWidget::orderChanged() {
+    auto actualStatus = mapper_->model()->index(mapper_->currentIndex(), 2).data(Qt::UserRole).value<OrderStatus>();
+    inProgressButton_->setEnabled(actualStatus == OrderStatus::Pending);
+    completedButton_->setEnabled(actualStatus == OrderStatus::InProgress);
+    payedButton_->setEnabled(actualStatus == OrderStatus::PayIntent);
 }

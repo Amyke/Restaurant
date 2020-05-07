@@ -1,11 +1,12 @@
 #include "OrdersModel.hpp"
 
 #include <QtCore/QDateTime>
+#include <QtGui/QColor>
 
 OrdersModel::OrdersModel(QObject *parent) : QAbstractTableModel(parent) {
-  /*  std::vector<FoodContains> foods{FoodContains{0, "valami", 2, 5}};
-    orders_ = {Orders{1, "TableId", foods, QDateTime::currentDateTime().toTime_t(), OrderStatus::Payed},
-               Orders{2, "TableId2", {}, QDateTime::currentDateTime().toTime_t(), OrderStatus::Completed}};*/
+    /*  std::vector<FoodContains> foods{FoodContains{0, "valami", 2, 5}};
+      orders_ = {Orders{1, "TableId", foods, QDateTime::currentDateTime().toTime_t(), OrderStatus::Payed},
+                 Orders{2, "TableId2", {}, QDateTime::currentDateTime().toTime_t(), OrderStatus::Completed}};*/
 
     qRegisterMetaType<std::vector<FoodContains>>();
 }
@@ -30,11 +31,11 @@ QVariant OrdersModel::headerData(int section, Qt::Orientation orientation, int r
 }
 
 int OrdersModel::columnCount(const QModelIndex &parent) const {
-    return 4;
+    return 5;
 }
 
 QVariant OrdersModel::data(const QModelIndex &index, int role) const {
-    if (role != Qt::DisplayRole && role != Qt::EditRole && role != Qt::UserRole) {
+    if (role != Qt::DisplayRole && role != Qt::EditRole && role != Qt::UserRole && role != Qt::BackgroundRole) {
         return {};
     }
 
@@ -47,6 +48,10 @@ QVariant OrdersModel::data(const QModelIndex &index, int role) const {
     case 2:
         if (role == Qt::UserRole) {
             return QVariant::fromValue(order.Status);
+        } else if (role == Qt::BackgroundRole && order.Status == OrderStatus::PayIntent) {
+            return QColor(Qt::red);
+        } else if (role == Qt::BackgroundColorRole && order.Status == OrderStatus::Pending) {
+            return QColor(Qt::yellow);
         } else {
             return orderStatusToString(order.Status);
         }
@@ -66,7 +71,7 @@ QVariant OrdersModel::data(const QModelIndex &index, int role) const {
     return {};
 }
 
-void OrdersModel::mergeOrders(std::vector<Orders>& present, const std::vector<Orders> &newOrders) {
+void OrdersModel::mergeOrders(std::vector<Orders> &present, const std::vector<Orders> &newOrders) {
 
     std::vector<Orders> toBeInserted;
     auto newIt = newOrders.begin();
