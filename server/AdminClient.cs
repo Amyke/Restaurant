@@ -82,8 +82,8 @@ namespace restaurant_server
             //model->data from database from-to List<Orders>
 
             var orders = (await _model.ListOrders(
-                    new DateTime((long)msg.FromDate),
-                    new DateTime((long)msg.ToDate)
+                    DateTimeOffset.FromUnixTimeSeconds((long)msg.FromDate),
+                    DateTimeOffset.FromUnixTimeSeconds((long)msg.ToDate)
                 )).ToList();
             await IClient.Send(new OrderArrivedReplyMessage { Orders = orders }, cancellation);
         }
@@ -94,7 +94,7 @@ namespace restaurant_server
             if (success)
             {
                 await _connectionHandler.BroadcastToAdmins(new FoodChangeReplyMessage
-                { 
+                {
                     Status = FoodChangeStatus.Success
                 });
             }
@@ -113,14 +113,22 @@ namespace restaurant_server
             {
                 await _connectionHandler.BroadcastToAdmins(new OrderStatusChangeReplyMessage
                 {
-                    OrderId = result.OrderId,
+#pragma warning disable CS8629 // Nullable value type may be null.
+                    OrderId = result.OrderId.Value,
                     Status = ReplyStatus.Success,
-                    NewStatus = result.NewStatus,
-                    Date = result.Date
+                    NewStatus = result.NewStatus.Value,
+                    Date = result.Date.Value
+#pragma warning restore CS8629 // Nullable value type may be null.
                 });
-            }else
+            }
+            else
             {
-            await IClient.Send(new OrderStatusChangeReplyMessage { OrderId = result.OrderId, Status = ReplyStatus.Failed, NewStatus = result.NewStatus, Date = result.Date }, cancellation);
+                await IClient.Send(new OrderStatusChangeReplyMessage
+                {
+                    OrderId = msg.OrderId,
+                    Status = ReplyStatus.Failed,
+                    NewStatus = msg.Status
+                }, cancellation);
 
             }
 

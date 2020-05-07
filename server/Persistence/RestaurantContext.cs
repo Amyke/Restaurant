@@ -15,6 +15,12 @@ namespace restaurant_server.Persistence
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -43,7 +49,7 @@ namespace restaurant_server.Persistence
         public DbSet<OrderFoodAmount> OrderFoodAmounts { get; set; }
     }
 
-    class User
+    public class User
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int32 Id { get; set; }
@@ -58,7 +64,7 @@ namespace restaurant_server.Persistence
         public bool IsAdmin { get; set; }
     }
 
-    class Food
+    public class Food
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int32 Id { get; set; }
@@ -73,18 +79,18 @@ namespace restaurant_server.Persistence
         public bool Visible { get; set; }
     }
 
-    class FoodAmount
+    public class FoodAmount
     {
         [Required]
         public Int32 FoodId { get; set; }
         [ForeignKey(nameof(FoodId))]
-        public Food Food { get; set; }
+        virtual public Food Food { get; set; }
 
         [Required]
         public int Amount { get; set; }
     }
 
-    enum DbOrderStatus
+    public enum DbOrderStatus
     {
         Pending = 0,
         InProgress = 1,
@@ -92,35 +98,35 @@ namespace restaurant_server.Persistence
         Payed = 3
     }
 
-    class Order
+    public class Order
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int32 Id { get; set; }
 
         [Required]
-        public User Table { get; set; }
+        virtual public User Table { get; set; }
 
         [Required]
-        public DateTime Date { get; set; }
+        public DateTimeOffset Date { get; set; }
 
         [Required]
         public DbOrderStatus Status { get; set; }
 
         [Required]
-        IEnumerable<OrderFoodAmount> Foods { get; set; }
+        virtual public IEnumerable<OrderFoodAmount> Foods { get; set; }
     }
 
-    class OrderFoodAmount
+    public class OrderFoodAmount
     {
         [Required]
         public Int32 OrderId { get; set; }
         [ForeignKey(nameof(OrderId))]
-        public Order Order { get; set; }
+        virtual public Order Order { get; set; }
 
         [Required]
         public Int32 FoodId { get; set; }
         [ForeignKey(nameof(FoodId))]
-        public Food Food { get; set; }
+        virtual public Food Food { get; set; }
 
         [Required]
         public int Amount { get; set; }

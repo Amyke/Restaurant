@@ -194,9 +194,9 @@ namespace restaurant_server.test
             // Assert
             var expected = new OrderStatusChangeReplyMessage
             {
-                OrderId = expectedChange.OrderId,
-                Date = expectedChange.Date,
-                NewStatus = expectedChange.NewStatus,
+                OrderId = expectedChange.OrderId.Value,
+                Date = expectedChange.Date.Value,
+                NewStatus = expectedChange.NewStatus.Value,
                 Status = ReplyStatus.Success
             };
 
@@ -226,9 +226,9 @@ namespace restaurant_server.test
                 });
             var expected = new OrderStatusChangeReplyMessage
             {
-                OrderId = expectedChange.OrderId,
-                Date = expectedChange.Date,
-                NewStatus = expectedChange.NewStatus,
+                OrderId = expectedChange.OrderId.Value,
+                Date = expectedChange.Date.Value,
+                NewStatus = expectedChange.NewStatus.Value,
                 Status = ReplyStatus.Failed
             };
 

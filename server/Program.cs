@@ -32,7 +32,7 @@ namespace restaurant_server
             var comm = new Communication(new IPEndPoint(IPAddress.Any, 9007));
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken _cancellation = tokenSource.Token;
-            Model model = new Model();
+            Model model = new Model(dbContext);
             await using (var connectionHandler = new ConnectionHandler(comm, model, _cancellation))
             {
                 Console.CancelKeyPress += (s, args) =>

@@ -27,10 +27,10 @@ namespace restaurant_server
 
     public struct OrderStatusChangeResult
     {
-        public UInt64 OrderId { get; set; }
         public bool Success { get; set; }
-        public OrderStatus NewStatus { get; set; }
-        public UInt64 Date { get; set; }
+        public UInt64? OrderId { get; set; }
+        public OrderStatus? NewStatus { get; set; }
+        public UInt64? Date { get; set; }
     }
 
     public interface IModel
@@ -39,7 +39,7 @@ namespace restaurant_server
         Task<IEnumerable<Food>> ListFoods(bool visibleOnly);
         Task<OrderResult> AddOrder(string name, List<FoodAmount> orderedfood);
         Task<PayResult> TryPay(string tableId);
-        Task<IEnumerable<Orders>> ListOrders(DateTime from, DateTime to);
+        Task<IEnumerable<Orders>> ListOrders(DateTimeOffset from, DateTimeOffset to);
 
         Task<bool> FoodChange(Delta changes);
 
