@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
     auto widget = new MainWidget;
     window.setCentralWidget(widget);
 
+#ifndef NDEBUG
     auto debugMenu = window.menuBar()->addMenu("Debug");
     QObject::connect(debugMenu->addAction("Login"), &QAction::triggered, widget,
                      [widget] { widget->setCurrentIndex(0); });
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
                      [widget] { widget->setCurrentIndex(3); });
     QObject::connect(debugMenu->addAction("End"), &QAction::triggered, widget,
                      [widget] { widget->setCurrentIndex(4); });
+#endif
 
     window.show();
 

@@ -12,6 +12,7 @@ LoginWidget::LoginWidget(QWidget *parent) : QWidget(parent) {
 
     auto passwordEdit = new QLineEdit;
     passwordEdit->setPlaceholderText(tr("Password"));
+    passwordEdit->setEchoMode(QLineEdit::Password);
 
     loginButton_ = new QPushButton(tr("Login"));
 
