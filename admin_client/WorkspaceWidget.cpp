@@ -59,9 +59,10 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
         model.ordersListRequest(oneWeekAgo.toTime_t(), now.toTime_t());
     });
 
-    connect(&model, &Model::orderListArrived, this, [this, orderDetailsView](const std::vector<Orders> &value) {
+    connect(&model, &Model::orderListArrived, this, [this, orderDetailsView, diagrammView](const std::vector<Orders> &value) {
         ordersModel_->addOrders(value);
-        orderDetailsView->orderChanged();
+
+        diagrammView->refreshData(ordersModel_->orders());
     });
 
     connect(&model, &Model::newOrderArrived, this, [this, orderDetailsView](const Orders &value) {
@@ -93,6 +94,10 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
         auto orderId = actualIndex.data(Qt::UserRole).value<std::uint64_t>();
         auto status = OrderStatus::Payed;
         model.orderStatusChangeRequest(orderId, status);
+    });
+
+    connect(diagrammView, &DiagrammWidget::dataRequest, this, [&model](const QDate &begin, const QDate &end) {
+        model.ordersListRequest(((QDateTime)begin).toTime_t(), ((QDateTime)end).toTime_t());
     });
 
     connect(&model, &Model::orderStatusChangeSucceded, this,

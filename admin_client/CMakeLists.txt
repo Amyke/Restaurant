@@ -29,6 +29,8 @@ target_sources(restaurantAdmin-app.lib PRIVATE
 
   DiagrammWidget.cpp
   DiagrammWidget.hpp
+  Charts.hpp
+  Charts.cpp
 )
 
 target_include_directories(restaurantAdmin-app.lib
@@ -36,6 +38,7 @@ target_include_directories(restaurantAdmin-app.lib
 )
 target_link_libraries(restaurantAdmin-app.lib
   PUBLIC Qt5::Widgets
+         Qt5::Charts
          client_lib
 )
 

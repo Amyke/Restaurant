@@ -20,6 +20,7 @@ find_package(Qt5 5.12 REQUIRED CONFIG
   COMPONENTS Widgets
              Network
              Test
+             Charts
 )
 
 add_compile_definitions(
