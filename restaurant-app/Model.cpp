@@ -31,6 +31,7 @@ Model::Model(IClient *client, QObject *parent) : QObject(parent), client(client)
             reconnectTimer_->stop();
         }
         connected_ = true;
+        actualState = State::WaitingForLogin;
         connectionStateChanged(connected_);
     });
     connect(client, &IClient::connectionLost, this, [this] {
