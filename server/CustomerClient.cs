@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,6 +69,8 @@ namespace restaurant_server
         private async Task HandleOrderRequestArrived(OrderRequestMessage msg, CancellationToken cancellation)
         {
             var result = await _model.AddOrder(Name, msg.Orderedfood);
+            var foodsToAdmins = (await _model.ListFoods(false)).ToList();
+            var foodsToCustomers = (await _model.ListFoods(true)).Select(x=>x.FoodData).ToList();
             if (result.Success)
             {
                 await IClient.Send(new OrderReplyMessage
@@ -78,6 +81,14 @@ namespace restaurant_server
                 await _connectionHandler.BroadcastToAdmins(new NotificationOrdersMessage
                 {
                     Order = result.Order!
+                });
+                await _connectionHandler.BroadcastToAdmins(new CompleteFoodReplyMessage
+                { 
+                    FoodData = foodsToAdmins
+                });
+                await _connectionHandler.BrodcastToCustomers(new FoodListReplyMessage
+                { 
+                    Foods = foodsToCustomers
                 });
             }
             else
@@ -94,7 +105,7 @@ namespace restaurant_server
             PayResult result = await _model.TryPay(msg.OrderId, Name);
             if (result.Success)
             {
-                await IClient.Send(new PayReplyMessage { Status = PayStatus.Success }, cancellation);
+                //await IClient.Send(new PayReplyMessage { Status = PayStatus.Success }, cancellation);
                 await _connectionHandler.BroadcastToAdmins(new NotificationOrdersMessage
                 {
                     Order = result.Order!

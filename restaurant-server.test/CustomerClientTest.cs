@@ -103,6 +103,26 @@ namespace restaurant_server.test
                 TableId = "Table",
                 Status = OrderStatus.Pending
             };
+            List<Food> expected = new List<Food>{
+                new Food{
+                        FoodData = new FoodContains {
+                        Amount = 2,
+                        FoodId = 0,
+                        FoodName = "Bundáskenyér",
+                        FoodPrice = 300
+                    },
+                    Visible = false },
+                new Food
+                {
+                    FoodData = new FoodContains{
+                    FoodId = 2,
+                    FoodName = "Palacsinta",
+                    Amount = 5,
+                    FoodPrice = 250
+                    },
+                    Visible = true
+                }
+            };
             _model
                .Setup(m => m.AddOrder(It.IsAny<string>(), It.IsAny<List<FoodAmount>>())).Returns((string name, List<FoodAmount> orderedfood) =>
               {
@@ -113,6 +133,11 @@ namespace restaurant_server.test
                   };
                   return Task.FromResult(result);
               });
+            _model
+               .Setup(m => m.ListFoods(It.IsAny<bool>())).Returns((bool Visible) =>
+               {
+                   return Task.FromResult<IEnumerable<Food>>(expected);
+               });
 
             // Act
             await _client.HandleMessage(new OrderRequestMessage(), _tokenSource.Token);
@@ -126,6 +151,15 @@ namespace restaurant_server.test
             _connectionHandler
                 .Verify(ch => ch.BroadcastToAdmins(It.Is<NotificationOrdersMessage>(msg =>
                     TestHelper.OrdersAreEqual(expectedOrder).Invoke(msg.Order)
+                )));
+            
+           _connectionHandler
+                .Verify(ch => ch.BroadcastToAdmins(It.Is<CompleteFoodReplyMessage>(msg =>
+                    msg.FoodData.SequenceEqual(expected)
+                )));
+            _connectionHandler
+                .Verify(ch => ch.BrodcastToCustomers(It.Is<FoodListReplyMessage>(msg =>
+                   msg.Foods.SequenceEqual(expected.Select(f => f.FoodData))
                 )));
         }
 
@@ -214,9 +248,9 @@ namespace restaurant_server.test
             await _client.HandleMessage(new PayRequestMessage(), _tokenSource.Token);
 
             // Assert
-           /* _IClient
-               .Verify(c => c.Send(It.Is<PayReplyMessage>(msg =>
-                    msg.Status == PayStatus.Success), _tokenSource.Token));*/
+            /* _IClient
+                .Verify(c => c.Send(It.Is<PayReplyMessage>(msg =>
+                     msg.Status == PayStatus.Success), _tokenSource.Token));*/
 
             _connectionHandler
                 .Verify(ch => ch.BroadcastToAdmins(It.Is<NotificationOrdersMessage>(msg =>

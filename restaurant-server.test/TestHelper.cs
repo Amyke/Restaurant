@@ -24,6 +24,13 @@ namespace restaurant_server.test
             expected.SequenceEqual(actual);
 
         }
+
+        public static Func<List<FoodContains>, bool> FoodContainsAreEqual(List<FoodContains> expected)
+        {
+            return actual =>
+            expected.SequenceEqual(actual);
+
+        }
         public static Func<OrderStatusChangeReplyMessage, bool> OrderChangeAreEqual(OrderStatusChangeReplyMessage expected)
         {
             return actual =>

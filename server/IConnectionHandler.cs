@@ -12,6 +12,7 @@ namespace restaurant_server
         void CreateAdmin(string name, IClient client);
         void CreateCustomer(string name, IClient client);
         Task BroadcastToAdmins(Message msg);
+        Task BrodcastToCustomers(Message msg);
         Task SendToCustomer(string tableId, Message msg);
     }
 }

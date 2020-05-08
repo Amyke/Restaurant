@@ -120,10 +120,19 @@ namespace restaurant_server
                     Date = result.Order!.OrderDate
 #pragma warning restore CS8629 // Nullable value type may be null.
                 });
-                await _connectionHandler.SendToCustomer(result.Order!.TableId, new NotificationOrdersMessage
+
+                if (result.Order.Status == OrderStatus.Payed)
                 {
-                    Order = result.Order!
-                });
+                    await _connectionHandler.SendToCustomer(result.Order!.TableId, new PayReplyMessage { Status = PayStatus.Success });
+                }
+                else
+                {
+
+                    await _connectionHandler.SendToCustomer(result.Order!.TableId, new NotificationOrdersMessage
+                    {
+                        Order = result.Order!
+                    });
+                }
             }
             else
             {

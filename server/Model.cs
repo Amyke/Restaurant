@@ -75,6 +75,8 @@ namespace restaurant_server
                     return new OrderResult { Success = false };
                 }
                 dbFoods.Add(db, (int)ordered.Amount);
+
+                db.Amount -= (int)ordered.Amount;
             }
 
             var order = new Persistence.Order
@@ -91,6 +93,7 @@ namespace restaurant_server
                 Food = pair.Key.Food,
                 Amount = pair.Value
             });
+
             await data.AddRangeAsync(orderFoodAmounts);
             await data.SaveChangesAsync();
             await trx.CommitAsync();

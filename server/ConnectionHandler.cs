@@ -107,6 +107,11 @@ namespace restaurant_server
             _logger.LogDebug("BroadcastToAdmins: {}", msg.Id);
             await Task.WhenAll(_adminClients.Select(c => c.IClient.Send(msg, _cancellation)));
         }
+        public async Task BrodcastToCustomers(Message msg)
+        {
+            _logger.LogDebug("BroadcastCustomers: {}", msg.Id);
+            await Task.WhenAll(_customerClients.Select(c => c.IClient.Send(msg, _cancellation)));
+        }
 
         public async Task SendToCustomer(string tableId, Message msg)
         {
