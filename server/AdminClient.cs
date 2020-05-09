@@ -74,7 +74,7 @@ namespace restaurant_server
 
         private async Task HandleCompleteFoodRequest(CompleteFoodRequestMessage msg, CancellationToken cancellation)
         {
-            var foods = (await _model.ListFoods(false)).ToList();
+            var foods = (await _model.ListFoods(false)).OrderBy(x=>x.FoodData.FoodName).ToList();
             await IClient.Send(new CompleteFoodReplyMessage { FoodData = foods }, cancellation);
         }
         private async Task HandleOrderArrivedRequest(OrderArrivedRequestMessage msg, CancellationToken cancellation)
@@ -84,7 +84,8 @@ namespace restaurant_server
             var orders = (await _model.ListOrders(
                     DateTimeOffset.FromUnixTimeSeconds((long)msg.FromDate),
                     DateTimeOffset.FromUnixTimeSeconds((long)msg.ToDate)
-                )).ToList();
+                )).OrderBy(x=>x.OrderId).ToList();
+
             await IClient.Send(new OrderArrivedReplyMessage { Orders = orders }, cancellation);
         }
         private async Task HandleFoodChangeRequest(FoodChangeRequestMessage msg, CancellationToken cancellation)

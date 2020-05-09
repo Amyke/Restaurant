@@ -38,9 +38,14 @@ namespace restaurant_server
 
         public void CreateCustomer(string name, IClient client)
         {
+
             var newCustomer = new CustomerClient(client, name, _model, this);
             _customerClients.Add(newCustomer);
             _pendingClients.RemoveAll(c => c.IClient == client);
+        }
+        public IEnumerable<string> GetLoggedInCustomers()
+        {
+            return _customerClients.Select(x => x.Name);
         }
 
         private void OnConnectionEstablished(object? sender, IClient e)

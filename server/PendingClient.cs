@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using communication_lib;
@@ -26,8 +27,15 @@ namespace restaurant_server
             switch (await _model.Login(name, password))
             {
                 case LoginResult.Customer:
-                    await IClient.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, cancellation);
-                    _connectionHandler.CreateCustomer(name, IClient);
+                    if (_connectionHandler.GetLoggedInCustomers().Contains(name))
+                    {
+                       await IClient.Send(new LoginReplyMessage { Status = LoginStatus.Error }, cancellation);
+                    }
+                    else
+                    {
+                        await IClient.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, cancellation);
+                        _connectionHandler.CreateCustomer(name, IClient);
+                    }
                     break;
                 case LoginResult.Admin:
                     await IClient.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, cancellation);

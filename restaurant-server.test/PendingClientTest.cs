@@ -112,6 +112,9 @@ namespace restaurant_server.test
                    }
                    return Task.FromResult(LoginResult.Deny);
                });
+            _connectionHandler
+                .Setup(c => c.GetLoggedInCustomers())
+                .Returns(new List<string> { });
 
             await _client.LoginRequested("Table", "table", _tokenSource.Token);
 
@@ -119,6 +122,57 @@ namespace restaurant_server.test
                 .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, _tokenSource.Token));
             _connectionHandler
                 .Verify(ch => ch.CreateCustomer("Table", _IClient.Object));
+            _connectionHandler.Verify(ch => ch.GetLoggedInCustomers());
+        }
+
+        [Test]
+        public async Task LoginRequestCustomers_Successful()
+        {
+            _model.
+                Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
+               .Returns((string user, string pass) =>
+               {
+                   if (user == "Table" && pass == "table" || user == "test" && pass == "test")
+                   {
+                       return Task.FromResult(LoginResult.Customer);
+                   }
+                   return Task.FromResult(LoginResult.Deny);
+               });
+            _connectionHandler
+                .Setup(c => c.GetLoggedInCustomers())
+                .Returns(new List<string> { "test" });
+
+            await _client.LoginRequested("Table", "table", _tokenSource.Token);
+
+            _IClient
+                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, _tokenSource.Token));
+            _connectionHandler
+                .Verify(ch => ch.CreateCustomer("Table", _IClient.Object));
+            _connectionHandler.Verify(ch => ch.GetLoggedInCustomers());
+        }
+
+        [Test]
+        public async Task LoginRequestedCustomers_LoggedInAlready()
+        {
+            _model.
+               Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
+              .Returns((string user, string pass) =>
+              {
+                  if (user == "Table" && pass == "table" || user == "test" && pass == "test")
+                  {
+                      return Task.FromResult(LoginResult.Customer);
+                  }
+                  return Task.FromResult(LoginResult.Deny);
+              });
+            _connectionHandler
+                .Setup(c => c.GetLoggedInCustomers())
+                .Returns(new List<string> { "Table" });
+
+            await _client.LoginRequested("Table", "table", _tokenSource.Token);
+
+            _IClient
+                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));
+            _connectionHandler.Verify(ch => ch.GetLoggedInCustomers());
         }
 
         [Test]
