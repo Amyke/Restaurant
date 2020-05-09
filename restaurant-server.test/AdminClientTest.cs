@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -132,11 +133,45 @@ namespace restaurant_server.test
         public async Task FoodChangeRequest_Successful()
         {
             // Arrange
+
+            var expectedFoods = new List<Food>
+            {
+                new Food
+                {
+                    Visible = true,
+                    FoodData = new FoodContains
+                    {
+                        FoodId = 0,
+                        FoodName = "Gulyás",
+                        Amount = 10,
+                        FoodPrice = 500
+                    }
+                },
+                new Food
+                {
+                    Visible = true,
+                    FoodData = new FoodContains
+                    {
+                        FoodId = 1,
+                        FoodName = "Palacsinta",
+                        Amount = 5,
+                        FoodPrice = 250
+                    }
+                }
+            };
+
             _model.
                 Setup(m => m.FoodChange(It.IsAny<Delta>())).Returns((Delta delta) =>
                {
                    return Task.FromResult(true);
                });
+
+            _model
+                .Setup(m => m.ListFoods(It.IsAny<bool>())).Returns((bool Visible) =>
+                {
+                    return Task.FromResult<IEnumerable<Food>>(expectedFoods);
+                });
+
 
             // Act
             await _client.HandleMessage(new FoodChangeRequestMessage { }, _tokenSource.Token);
@@ -145,6 +180,9 @@ namespace restaurant_server.test
             _connectionHandler.
                 Verify(ch => ch.BroadcastToAdmins(It.Is<FoodChangeReplyMessage>(msg =>
                     msg.Status == FoodChangeStatus.Success)
+                ));
+            _connectionHandler.Verify(ch => ch.BrodcastToCustomers(It.Is<FoodListReplyMessage>(msg =>
+            msg.Foods.SequenceEqual(expectedFoods.Select(f => f.FoodData)))
                 ));
 
             _IClient.VerifyNoOtherCalls();
@@ -186,7 +224,7 @@ namespace restaurant_server.test
                     TableId = "Table",
                     OrderDate = (UInt64)DateTime.Now.Ticks,
                     Status = OrderStatus.InProgress,
-                    OrderedFoods = new List<FoodContains> {                    
+                    OrderedFoods = new List<FoodContains> {
                         new FoodContains
                         {
                             FoodId = 0,
@@ -220,8 +258,8 @@ namespace restaurant_server.test
                     TestHelper.OrderChangeAreEqual(expected).Invoke(msg)
                 )));
             _connectionHandler
-                .Verify(ch => ch.SendToCustomer(It.IsAny<string>(), It.Is<NotificationOrdersMessage>( msg =>  
-                    msg.Order == expectedChange.Order
+                .Verify(ch => ch.SendToCustomer(It.IsAny<string>(), It.Is<NotificationOrdersMessage>(msg =>
+                   msg.Order == expectedChange.Order
                 )));
 
             _IClient.VerifyNoOtherCalls();
