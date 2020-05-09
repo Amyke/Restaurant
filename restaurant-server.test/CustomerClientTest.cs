@@ -140,7 +140,13 @@ namespace restaurant_server.test
                });
 
             // Act
-            await _client.HandleMessage(new OrderRequestMessage(), _tokenSource.Token);
+            await _client.HandleMessage(
+                new OrderRequestMessage
+                {
+                    Orderedfood = expectedFoods
+                        .Select(x => new FoodAmount { FoodId = x.FoodId, Amount = x.Amount })
+                        .ToList()
+                }, _tokenSource.Token);
 
             // Assert
             _IClient
@@ -161,6 +167,21 @@ namespace restaurant_server.test
                 .Verify(ch => ch.BrodcastToCustomers(It.Is<FoodListReplyMessage>(msg =>
                    msg.Foods.SequenceEqual(expected.Select(f => f.FoodData))
                 )));
+        }
+
+        [Test]
+        public async Task OrderRequest_FailedEmptyRequest()
+        {
+            // Act
+            await _client.HandleMessage(new OrderRequestMessage(), _tokenSource.Token);
+
+            // Assert
+            _model.VerifyNoOtherCalls();
+            _IClient
+               .Verify(c => c.Send(It.Is<OrderReplyMessage>(msg =>
+                    msg.Orderedfoods.Count == 0), _tokenSource.Token));
+
+            _connectionHandler.VerifyNoOtherCalls();
         }
 
         [Test]
@@ -197,7 +218,12 @@ namespace restaurant_server.test
                }));
 
             // Act
-            await _client.HandleMessage(new OrderRequestMessage(), _tokenSource.Token);
+            await _client.HandleMessage(new OrderRequestMessage
+            {
+                Orderedfood = expectedFoods
+                    .Select(x => new FoodAmount { FoodId = x.FoodId, Amount = x.Amount })
+                    .ToList()
+            }, _tokenSource.Token);
 
             // Assert
             _IClient

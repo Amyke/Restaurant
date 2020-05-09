@@ -172,6 +172,7 @@ namespace restaurant_server
             using var data = CreateDatabase();
             return await data.Orders
                 .Where(o => from <= o.Date && o.Date <= to)
+                .OrderBy(x => x.Id)
                 .Select(item => new Orders
                 {
                     OrderId = (UInt32)item.Id,

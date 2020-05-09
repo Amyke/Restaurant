@@ -80,11 +80,10 @@ namespace restaurant_server
         private async Task HandleOrderArrivedRequest(OrderArrivedRequestMessage msg, CancellationToken cancellation)
         {
             //model->data from database from-to List<Orders>
-
             var orders = (await _model.ListOrders(
                     DateTimeOffset.FromUnixTimeSeconds((long)msg.FromDate),
                     DateTimeOffset.FromUnixTimeSeconds((long)msg.ToDate)
-                )).OrderBy(x=>x.OrderId).ToList();
+                )).ToList();
 
             await IClient.Send(new OrderArrivedReplyMessage { Orders = orders }, cancellation);
         }
