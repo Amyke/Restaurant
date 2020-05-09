@@ -97,6 +97,10 @@ namespace restaurant_server
                 {
                     Status = FoodChangeStatus.Success
                 });
+                await _connectionHandler.BrodcastToCustomers(new FoodListReplyMessage
+                {
+                    Foods = (await _model.ListFoods(true)).Select(x => x.FoodData).ToList()
+                });
             }
             else
             {

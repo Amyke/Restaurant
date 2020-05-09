@@ -15,7 +15,7 @@ class QTimer;
 class Model : public QObject {
     Q_OBJECT
 
-    enum class State { WaitingForLogin, TitleScreen, WaitingForOrder, WaitingForPayIntent };
+    enum class State { WaitingForLogin, TitleScreen, WaitingForFoodList, WaitingForOrder, WaitingForPayIntent };
     friend QDebug &operator<<(QDebug &, State);
 
 public:
@@ -40,6 +40,7 @@ signals:
     void loginFailed();
 
     void foodListRefreshed(const std::vector<FoodContains> &);
+    void readyToOrder();
 
     void orderSucceded(const std::vector<FoodContains> &);
     void orderFailed();

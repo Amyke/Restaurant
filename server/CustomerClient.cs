@@ -63,7 +63,7 @@ namespace restaurant_server
 
         private async Task HandleFoodListRequest(FoodListRequestMessage msg, CancellationToken cancellation)
         {
-            var foods = (await _model.ListFoods(true)).Select(f => f.FoodData).OrderBy(x => x.FoodName).ToList();
+            var foods = (await _model.ListFoods(true)).Select(f => f.FoodData).ToList();
             await IClient.Send(new FoodListReplyMessage { Foods = foods }, cancellation);
         }
 
@@ -78,8 +78,8 @@ namespace restaurant_server
                 return;
             }
             var result = await _model.AddOrder(Name, msg.Orderedfood);
-            var foodsToAdmins = (await _model.ListFoods(false)).OrderBy(x => x.FoodData.FoodName).ToList();
-            var foodsToCustomers = (await _model.ListFoods(true)).Select(x => x.FoodData).OrderBy(x => x.FoodName).ToList();
+            var foodsToAdmins = (await _model.ListFoods(false)).ToList();
+            var foodsToCustomers = (await _model.ListFoods(true)).Select(x => x.FoodData).ToList();
             if (result.Success)
             {
                 await IClient.Send(new OrderReplyMessage

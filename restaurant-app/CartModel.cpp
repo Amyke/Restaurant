@@ -1,5 +1,7 @@
 #include "CartModel.hpp"
 
+#include <QtGui/QColor>
+
 CartModel::CartModel(QObject *parent) : QAbstractTableModel(parent) {
 }
 
@@ -27,11 +29,21 @@ QVariant CartModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 QVariant CartModel::data(const QModelIndex &index, int role) const {
-    if (role != Qt::DisplayRole) {
+    if (role != Qt::DisplayRole && role != Qt::BackgroundRole) {
         return {};
     }
 
     const auto &food = selectedFoods_[index.row()];
+    if (role == Qt::BackgroundRole) {
+        auto search = std::find_if(foods_.begin(), foods_.end(),
+                                   [id = food.FoodId](const FoodContains &food) { return food.FoodId == id; });
+        if (search == foods_.end() || search->Amount < food.Amount) {
+            return QColor(Qt::red);
+        } else {
+            return {};
+        }
+    }
+
     switch (index.column()) {
     case 0:
         return QString::fromStdString(food.FoodName);
@@ -65,7 +77,6 @@ void CartModel::clearSelectedFoods() {
 void CartModel::setAvailableFoods(const std::vector<FoodContains> &value) {
     beginResetModel();
     foods_ = value;
-    selectedFoods_ = {};
     endResetModel();
 }
 

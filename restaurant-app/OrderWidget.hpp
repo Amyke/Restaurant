@@ -15,6 +15,7 @@ public:
     explicit OrderWidget(QWidget *parent = nullptr);
 
     void setFoodList(const std::vector<FoodContains> &foodList);
+    void resetCart();
 
 signals:
     void orderRequested(const std::vector<FoodAmount> &ordered);

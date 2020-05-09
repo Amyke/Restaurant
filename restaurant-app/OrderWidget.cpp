@@ -1,5 +1,6 @@
 #include "OrderWidget.hpp"
 
+#include <QtCore/QSortFilterProxyModel>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
@@ -19,7 +20,11 @@ OrderWidget::OrderWidget(QWidget *parent) : QWidget(parent) {
     auto selectFood = new QTableView;
     selectFood->setSelectionBehavior(QTableView::SelectRows);
     selectFood->setSelectionMode(QTableView::MultiSelection);
-    selectFood->setModel(foodListModel_);
+    auto proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(foodListModel_);
+    selectFood->setModel(proxyModel);
+    selectFood->sortByColumn(0, Qt::AscendingOrder);
+    selectFood->setSortingEnabled(false);
 
     auto cartView = new QTableView;
     cartView->setModel(cartModel_);
@@ -27,8 +32,8 @@ OrderWidget::OrderWidget(QWidget *parent) : QWidget(parent) {
     cartView->setSelectionMode(QTableView::MultiSelection);
 
     auto cartButton = new QPushButton(tr("Add to cart"));
-    auto deleteButton = new QPushButton(tr("Delete Food"));
-    auto clearButton = new QPushButton(tr("Clear Selected Foods"));
+    auto deleteButton = new QPushButton(tr("Delete Selected Food"));
+    auto clearButton = new QPushButton(tr("Clear Cart"));
     auto newOrderButton = new QPushButton(tr("Order"));
 
     mainLayout->addWidget(selectFood, 2);
@@ -70,4 +75,8 @@ OrderWidget::OrderWidget(QWidget *parent) : QWidget(parent) {
 void OrderWidget::setFoodList(const std::vector<FoodContains> &foodList) {
     foodListModel_->setFoodList(foodList);
     cartModel_->setAvailableFoods(foodList);
+}
+
+void OrderWidget::resetCart() {
+    cartModel_->clearSelectedFoods();
 }

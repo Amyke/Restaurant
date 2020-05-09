@@ -5,10 +5,12 @@
 
 QDebug &operator<<(QDebug &os, Model::State state) {
     switch (state) {
-    case Model::State::TitleScreen:
-        return os << "TitleScreen";
     case Model::State::WaitingForLogin:
         return os << "WaitingForLogin";
+    case Model::State::TitleScreen:
+        return os << "TitleScreen";
+    case Model::State::WaitingForFoodList:
+        return os << "WaitingForFoodList";
     case Model::State::WaitingForOrder:
         return os << "WaitingForOrder";
     case Model::State::WaitingForPayIntent:
@@ -82,6 +84,7 @@ void Model::listFoodRequest() {
 
     auto msg = QSharedPointer<FoodListRequestMessage>::create();
     client->send(msg);
+    actualStateChange();
 }
 
 void Model::orderSend(const std::vector<FoodAmount> &foods) {
@@ -191,14 +194,12 @@ void Model::handleLoginReply(const LoginReplyMessage &msg) {
 }
 
 void Model::handleListFoodReply(const FoodListReplyMessage &msg) {
-    if (actualState != State::TitleScreen) {
-        qWarning() << __FUNCTION__ << "called in invalid state:" << actualState;
-        return;
-    }
-
-    actualStateChange();
     availableFoods = msg.Foods;
     foodListRefreshed(availableFoods);
+    if (actualState == State::WaitingForFoodList) {
+        actualStateChange();
+        readyToOrder();
+    }
 }
 
 void Model::handleOrderReply(const OrderReplyMessage &msg) {
@@ -254,6 +255,10 @@ void Model::actualStateChange(std::optional<std::uint64_t> activeOrderId) {
         activeOrderStatus_ = std::nullopt;
         break;
     case State::TitleScreen:
+        actualState = State::WaitingForFoodList;
+        activeOrderStatus_ = std::nullopt;
+        break;
+    case State::WaitingForFoodList:
         actualState = State::WaitingForOrder;
         activeOrderStatus_ = std::nullopt;
         break;

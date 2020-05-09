@@ -51,9 +51,11 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
     addWidget(endwindow);
 
     connect(model, &Model::loginSucceded, this, [this, welcomeWindow] { setCurrentWidget(welcomeWindow); });
-    connect(model, &Model::foodListRefreshed, this, [this, orderwindow](const std::vector<FoodContains> &foodList) {
-        orderwindow->setFoodList(foodList);
+    connect(model, &Model::foodListRefreshed, this,
+            [orderwindow](const std::vector<FoodContains> &foodList) { orderwindow->setFoodList(foodList); });
+    connect(model, &Model::readyToOrder, this, [this, orderwindow] {
         setCurrentWidget(orderwindow);
+        orderwindow->resetCart();
     });
     connect(model, &Model::orderSucceded, this, [this, paywindow](const std::vector<FoodContains> &foods) {
         paywindow->setFoodList(foods);
@@ -62,7 +64,7 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
 
     connect(model, &Model::statusChanged, this, [paywindow](OrderStatus status) { paywindow->setOrderStatus(status); });
 
-     connect(model, &Model::paySucceded, this, [this, endwindow] { setCurrentWidget(endwindow); });
+    connect(model, &Model::paySucceded, this, [this, endwindow] { setCurrentWidget(endwindow); });
     connect(endwindow, &EndWidget::startAgain, this, [this, welcomeWindow] { setCurrentWidget(welcomeWindow); });
 
     auto networkErrorWidget = new QLabel(tr("Network Error"));
