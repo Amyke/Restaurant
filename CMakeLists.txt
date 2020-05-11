@@ -68,3 +68,85 @@ add_subdirectory(admin_client)
 add_subdirectory(admin_client.test)
 
 feature_summary(WHAT ALL)
+
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "Beke Ágnes")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION "hosszú leírás")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "rövid leírás")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
+if(WIN32)
+  set(CPACK_GENERATOR "IFW")
+  set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY "${PROJECT_NAME}")
+  install(CODE "
+    find_program(_windeployqt
+      NAME windeployqt
+      PATHS $<TARGET_FILE_DIR:Qt5::Core>
+      NO_SYSTEM_PATHS
+    )
+
+    execute_process(
+      COMMAND \${_windeployqt}
+              --$<IF:$<CONFIG:Debug>,debug,release>
+              --no-translations
+              --no-compiler-runtime
+              --no-opengl-sw
+              --no-system-d3d-compiler
+              --dir \${CMAKE_INSTALL_PREFIX}/bin
+              $<TARGET_FILE:restaurant-app>
+              $<TARGET_FILE:restaurantAdmin-app>
+    )
+    "
+    COMPONENT Qt
+  )
+  set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+  include(InstallRequiredSystemLibraries)
+  install(
+    PROGRAMS ${MSVC_REDIST_DIR}/vc_redist.x64.exe
+    DESTINATION vc_redist
+    COMPONENT vc_redist
+  )
+else()
+endif()
+include(CPack)
+
+set(_Admin_DISPLAY_NAME "Admin")
+set(_Admin_DESCRIPTION "${PROJECT_NAME} Administrator client")
+set(_Customer_DISPLAY_NAME "Customer")
+set(_Customer_DESCRIPTION "${PROJECT_NAME} Customer client")
+if(WIN32)
+  cpack_add_component(Qt HIDDEN)
+  cpack_add_component(vc_redist HIDDEN)
+  cpack_add_component(Admin
+    DISPLAY_NAME "${_Admin_DISPLAY_NAME}"
+    DESCRIPTION "${_Admin_DESCRIPTION}"
+    DEPENDS Qt vc_redist
+  )
+  cpack_add_component(Customer
+    DISPLAY_NAME "${_Customer_DISPLAY_NAME}"
+    DESCRIPTION "${_Customer_DESCRIPTION}"
+    DEPENDS Qt vc_redist
+  )
+else()
+  cpack_add_component(Admin
+    DISPLAY_NAME "${_Admin_DISPLAY_NAME}"
+    DESCRIPTION "${_Admin_DESCRIPTION}"
+  )
+  cpack_add_component(Customer
+    DISPLAY_NAME "${_Customer_DISPLAY_NAME}"
+    DESCRIPTION "${_Customer_DESCRIPTION}"
+  )
+endif()
+
+if(WIN32)
+  include(CPackIFW)
+  cpack_ifw_configure_component(Admin
+    SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/packaging/Admin.qs
+  )
+  cpack_ifw_configure_component(Customer
+    SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/packaging/Customer.qs
+  )
+  cpack_ifw_configure_component(vc_redist
+    SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/packaging/vc_redist.qs
+  )
+endif()
