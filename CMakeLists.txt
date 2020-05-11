@@ -16,7 +16,7 @@ set_property(GLOBAL PROPERTY
 include(FeatureSummary)
 
 find_package(msgpack 3.2.1 EXACT REQUIRED CONFIG)
-find_package(Qt5 5.12 REQUIRED CONFIG
+find_package(Qt5 5.11 REQUIRED CONFIG
   COMPONENTS Widgets
              Network
              Test
