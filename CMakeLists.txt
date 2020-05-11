@@ -137,6 +137,10 @@ else()
     DESCRIPTION "${_Customer_DESCRIPTION}"
   )
 endif()
+cpack_add_component(Server
+  DISPLAY_NAME "Server"
+  DESCRIPTION "${PROJECT_NAME} Server"
+)
 
 if(WIN32)
   include(CPackIFW)
@@ -148,5 +152,9 @@ if(WIN32)
   )
   cpack_ifw_configure_component(vc_redist
     SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/packaging/vc_redist.qs
+  )
+  cpack_ifw_configure_component(server
+    REQUIRES_ADMIN_RIGHTS
+    SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/packaging/Server.qs
   )
 endif()
