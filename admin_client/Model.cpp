@@ -50,7 +50,8 @@ void Model::connectToServer(const QString &host, quint32 port) {
     if (timeoutConnection_) {
         disconnect(timeoutConnection_);
     }
-    timeoutConnection_ = reconnectTimer_->callOnTimeout(this, [this, host, port] { connectToServer(host, port); });
+    timeoutConnection_ =
+        connect(reconnectTimer_, &QTimer::timeout, this, [this, host, port] { connectToServer(host, port); });
 }
 
 void Model::login(const QString &username, const QString &password) {

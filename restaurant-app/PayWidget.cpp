@@ -3,11 +3,11 @@
 
 #include <QtCore/QString>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets\QMessageBox>
 
 #include <QtCore/QAbstractTableModel>
 

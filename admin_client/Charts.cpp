@@ -1,6 +1,5 @@
 #include "Charts.hpp"
 
-#include <execution>
 #include <numeric>
 
 #include <QtCharts/QBarCategoryAxis>
@@ -59,8 +58,8 @@ QtCharts::QChart *createIncomeChart(const std::vector<Orders> &orders) {
         }
         QDate date = QDateTime::fromTime_t(order.OrderedDate).date();
         data[date] +=
-            std::transform_reduce(std::execution::par_unseq, order.OrderedFoods.begin(), order.OrderedFoods.end(), 0,
-                                  std::plus<>{}, [](const FoodContains &food) { return food.Amount * food.FoodPrice; });
+            std::accumulate(order.OrderedFoods.begin(), order.OrderedFoods.end(), 0,
+                            [](int acc, const FoodContains &food) { return acc + food.Amount * food.FoodPrice; });
     }
 
     auto series = new QtCharts::QLineSeries;
@@ -70,9 +69,9 @@ QtCharts::QChart *createIncomeChart(const std::vector<Orders> &orders) {
         max = income > max ? income : max;
     }
 
-    //series->append(QDateTime(QDate(2020, 05, 07)).toMSecsSinceEpoch(), 5);
-    //series->append(QDateTime(QDate::currentDate()).toMSecsSinceEpoch(), 10);
-    //max = 10;
+    // series->append(QDateTime(QDate(2020, 05, 07)).toMSecsSinceEpoch(), 5);
+    // series->append(QDateTime(QDate::currentDate()).toMSecsSinceEpoch(), 10);
+    // max = 10;
 
     auto theme = QtCharts::QChart::ChartTheme::ChartThemeBlueCerulean;
 
@@ -83,7 +82,7 @@ QtCharts::QChart *createIncomeChart(const std::vector<Orders> &orders) {
     chart->setTheme(theme);
 
     auto axisX = new QtCharts::QDateTimeAxis;
-    axisX->setTickCount(std::min(2ull, data.size()));
+    axisX->setTickCount(std::min(static_cast<std::size_t>(2), data.size()));
     axisX->setFormat(ChartDialog::tr("yyyy.MM.dd"));
     axisX->setTitleText(ChartDialog::tr("Date"));
     chart->addAxis(axisX, Qt::AlignBottom);
@@ -94,13 +93,12 @@ QtCharts::QChart *createIncomeChart(const std::vector<Orders> &orders) {
     axisY->setTitleText(ChartDialog::tr("Money"));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
-    axisY->setTickAnchor(0);
     axisY->setRange(0, max <= 0 ? 1 : max);
 
     return chart;
 }
 
-QtCharts::QChart* createFoodKindAverageChart(const std::vector<Orders> &orders) {
+QtCharts::QChart *createFoodKindAverageChart(const std::vector<Orders> &orders) {
 
     // date -> (count(food kinds), count(orders))
     std::map<QDate, std::pair<int, int>> data;
@@ -110,9 +108,8 @@ QtCharts::QChart* createFoodKindAverageChart(const std::vector<Orders> &orders) 
         }
         QDate date = QDateTime::fromTime_t(order.OrderedDate).date();
         auto it = data.try_emplace(date, std::make_pair(0, 0)).first;
-        it->second.first =
-            std::transform_reduce(std::execution::par_unseq, order.OrderedFoods.begin(), order.OrderedFoods.end(),
-                                  it->second.first, std::plus<>{}, [](const FoodContains &food) { return 1; });
+        it->second.first = std::accumulate(order.OrderedFoods.begin(), order.OrderedFoods.end(), it->second.first,
+                                           [](int acc, const FoodContains &food) { return acc + 1; });
         it->second.second += 1;
     }
 
@@ -148,7 +145,6 @@ QtCharts::QChart* createFoodKindAverageChart(const std::vector<Orders> &orders) 
     axisY->setTitleText(ChartDialog::tr("Avarage Food/Count"));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
-    axisY->setTickAnchor(0);
     axisY->setRange(0, max <= 0 ? 1 : max);
 
     return chart;
@@ -164,9 +160,8 @@ QtCharts::QChart *createFoodAmountAverageChart(const std::vector<Orders> &orders
         }
         QDate date = QDateTime::fromTime_t(order.OrderedDate).date();
         auto it = data.try_emplace(date, std::make_pair(0, 0)).first;
-        it->second.first = std::transform_reduce(std::execution::par_unseq, order.OrderedFoods.begin(),
-                                                 order.OrderedFoods.end(), it->second.first, std::plus<>{},
-                                                 [](const FoodContains &food) { return food.Amount; });
+        it->second.first = std::accumulate(order.OrderedFoods.begin(), order.OrderedFoods.end(), it->second.first,
+                                           [](int acc, const FoodContains &food) { return acc + food.Amount; });
         it->second.second += 1;
     }
 
@@ -201,7 +196,6 @@ QtCharts::QChart *createFoodAmountAverageChart(const std::vector<Orders> &orders
     axisY->setLabelFormat("%i");
     axisY->setTitleText(ChartDialog::tr("Avarage Food/Count"));
     series->attachAxis(axisY);
-    axisY->setTickAnchor(0);
     axisY->setRange(0, max <= 0 ? 1 : max);
 
     chart->addAxis(axisY, Qt::AlignLeft);
@@ -227,9 +221,9 @@ QtCharts::QChart *createOrderCountChart(const std::vector<Orders> &orders) {
         max = income > max ? income : max;
     }
 
-    //series->append(QDateTime(QDate(2020, 05, 07)).toMSecsSinceEpoch(), 7);
-    //series->append(QDateTime(QDate::currentDate()).toMSecsSinceEpoch(), 16);
-    //max = 20;
+    // series->append(QDateTime(QDate(2020, 05, 07)).toMSecsSinceEpoch(), 7);
+    // series->append(QDateTime(QDate::currentDate()).toMSecsSinceEpoch(), 16);
+    // max = 20;
 
     auto theme = QtCharts::QChart::ChartTheme::ChartThemeBlueCerulean;
 
@@ -240,7 +234,7 @@ QtCharts::QChart *createOrderCountChart(const std::vector<Orders> &orders) {
     chart->setTheme(theme);
 
     auto axisX = new QtCharts::QDateTimeAxis;
-    axisX->setTickCount(std::min(2ull, data.size()));
+    axisX->setTickCount(std::min(static_cast<std::size_t>(2), data.size()));
     axisX->setFormat(ChartDialog::tr("yyyy.MM.dd"));
     axisX->setTitleText(ChartDialog::tr("Date"));
     chart->addAxis(axisX, Qt::AlignBottom);
@@ -251,7 +245,6 @@ QtCharts::QChart *createOrderCountChart(const std::vector<Orders> &orders) {
     axisY->setTitleText(ChartDialog::tr("Sum Orders"));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
-    axisY->setTickAnchor(0);
     axisY->setRange(0, max <= 0 ? 1 : max);
 
     return chart;
