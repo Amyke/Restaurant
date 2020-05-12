@@ -28,6 +28,22 @@ add_compile_definitions(
   SERVER_PORT=9012
 )
 
+function(add_dotnet_target _name _project_file _guid)
+  if(CMAKE_GENERATOR MATCHES "^Visual Studio .*$")
+    include_external_msproject(${_name} "${_project_file}"
+      GUID "${_guid}"
+    )
+  else()
+    file(GLOB_RECURSE _sources CONFIGURE_DEPENDS "*.cs")
+    add_custom_target(${_name} ALL
+      COMMAND dotnet build --configuration $<CONFIG>
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      SOURCES ${_sources}
+      DEPENDS ${_sources}
+    )
+  endif()
+endfunction()
+
 enable_testing()
 function(add_qt_test _name _source)
   add_executable(${_name})
@@ -48,15 +64,12 @@ function(add_qt_test _name _source)
   )
 endfunction()
 
-if(CMAKE_GENERATOR MATCHES "^Visual Studio .*$")
-  add_subdirectory(communication_lib)
-  add_subdirectory(communication_lib.test)
-  add_subdirectory(communication_lib.IntegrationTest)
+add_subdirectory(communication_lib)
+add_subdirectory(communication_lib.test)
+add_subdirectory(communication_lib.IntegrationTest)
 
-  add_subdirectory(server)
-
-  add_subdirectory(restaurant-server.test)
-endif()
+add_subdirectory(server)
+add_subdirectory(restaurant-server.test)
 
 add_subdirectory(client_lib)
 add_subdirectory(client_lib.test)
