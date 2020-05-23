@@ -69,6 +69,7 @@ OrderWidget::OrderWidget(QWidget *parent) : QWidget(parent) {
             orderRequestFoods.push_back({item.FoodId, item.Amount});
         }
         orderRequested(orderRequestFoods);
+        orderRequestFoods.clear();
     });
 }
 
