@@ -141,7 +141,8 @@ MSGPACK_ADD_ENUM(ReplyStatus);
 
 struct LoginRequestMessage final : Message {
     LoginRequestMessage() = default;
-    LoginRequestMessage(const std::string &name, const std::string &password) : Name(name), Password(password) {
+    LoginRequestMessage(const std::string &name, const std::string &password, const bool &isAdmin)
+        : Name(name), Password(password), IsAdmin(isAdmin) {
     }
 
     MessageId id() const final {
@@ -150,8 +151,9 @@ struct LoginRequestMessage final : Message {
 
     std::string Name;
     std::string Password;
+    bool IsAdmin;
 
-    MSGPACK_DEFINE(Name, Password);
+    MSGPACK_DEFINE(Name, Password, IsAdmin);
 };
 
 struct LoginReplyMessage final : Message {

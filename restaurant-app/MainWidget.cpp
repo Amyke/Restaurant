@@ -83,10 +83,10 @@ MainWidget::MainWidget(QWidget *parent) : QStackedWidget(parent), model(new Mode
     });
 
     connect(model, &Model::orderFailed, this, [this] {
-        QMessageBox::critical(this, tr("Order error"), tr("The requested order is sold out, pls choose another food"));
+        QMessageBox::critical(this, tr("Order error"), tr("The requested order is sold out, please choose another food"));
     });
     connect(model, &Model::payFailed, this, [this, paywindow] {
-        QMessageBox::critical(this, tr("Pay error"), tr("The pay request is faiiled, pls try again or ask help"));
+        QMessageBox::critical(this, tr("Pay error"), tr("The pay request is faiiled, please try again or ask help"));
         paywindow->payFailed();
     });
 }

@@ -35,7 +35,7 @@ private slots:
     }
 
     void SendOneMessage() {
-        LoginRequestMessage msg("name", "password");
+        LoginRequestMessage msg("name", "password", true);
         protocol_->sendMessage(msg);
         QVERIFY(!buffer_->data().isEmpty());
         buffer_->seek(0);
@@ -47,8 +47,8 @@ private slots:
     }
 
     void SendMoreMessage() {
-        LoginRequestMessage msg1("űű", "12c");
-        LoginRequestMessage msg2("ááá", "11c");
+        LoginRequestMessage msg1("űű", "12c", true);
+        LoginRequestMessage msg2("ááá", "11c", true);
         protocol_->sendMessage(msg1);
         protocol_->sendMessage(msg2);
         buffer_->seek(0);
@@ -62,7 +62,7 @@ private slots:
         QCOMPARE(static_cast<const LoginRequestMessage &>(*actual2), msg2);
     }
     void InterleavedMessages() {
-        LoginRequestMessage msg12("admin", "admin");
+        LoginRequestMessage msg12("admin", "admin", true);
         LoginReplyMessage msg22(LoginStatus::Ok);
         PayReplyMessage msg(PayStatus::Failed);
 

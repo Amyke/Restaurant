@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), model(new Model(n
     connect(model, &Model::loginSucceded, this, [widget, workspace] { widget->setCurrentWidget(workspace); });
 
     connect(model, &Model::loginFailed, this, [this] {
-        QMessageBox::critical(this, tr("Login error"), tr("The login request is failed, pls try again or ask help"));
+        QMessageBox::critical(this, tr("Login error"), tr("The login request is failed, please try again or ask help"));
     });
 }
 

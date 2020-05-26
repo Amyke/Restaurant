@@ -89,7 +89,7 @@ namespace restaurant_server
                     return;
                 }
                 var msg = (LoginRequestMessage)e;
-                await pendingClient.LoginRequested(msg.Name, msg.Password, _cancellation);
+                await pendingClient.LoginRequested(msg.Name, msg.Password, msg.IsAdmin, _cancellation);
                 return;
             }
 

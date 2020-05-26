@@ -16,5 +16,8 @@ namespace communication_lib
         [Key(1)]
         public string Password { get; set; }
 
+        [Key(2)]
+        public bool IsAdmin { get; set; }
+
     }
 }

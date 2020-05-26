@@ -10,7 +10,7 @@ EndWidget::EndWidget(QWidget* parent) : QWidget(parent) {
 
 
 	auto byebye = new QLabel;
-	byebye->setText(tr("We hope you enjoy the time what spend here, bye"));
+	byebye->setText(tr("We hope you enjoy the time, you have spent here, bye"));
 	QFont font = byebye->font();
 	font.setPointSize(52);
 	font.setBold(true);

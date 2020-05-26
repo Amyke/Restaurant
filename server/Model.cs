@@ -21,12 +21,12 @@ namespace restaurant_server
             _contextFactory = databaseContextFactory;
         }
 
-        async Task<LoginResult> IModel.Login(string name, string password)
+        async Task<LoginResult> IModel.Login(string name, string password, bool isAdmin)
         {
             using var data = CreateDatabase();
             var pass = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
             var user = await data.Users.FirstOrDefaultAsync(u => u.Name == name);
-            if (user != null && user.Password.SequenceEqual(pass))
+            if (user != null && user.Password.SequenceEqual(pass) && user.IsAdmin == isAdmin)
             {
                 return user.IsAdmin
                     ? LoginResult.Admin

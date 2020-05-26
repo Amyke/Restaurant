@@ -82,7 +82,7 @@ QtCharts::QChart *createIncomeChart(const std::vector<Orders> &orders) {
     chart->setTheme(theme);
 
     auto axisX = new QtCharts::QDateTimeAxis;
-    axisX->setTickCount(std::min(static_cast<std::size_t>(2), data.size()));
+    axisX->setTickCount(std::max(static_cast<std::size_t>(2), data.size()));
     axisX->setFormat(ChartDialog::tr("yyyy.MM.dd"));
     axisX->setTitleText(ChartDialog::tr("Date"));
     chart->addAxis(axisX, Qt::AlignBottom);
@@ -234,7 +234,7 @@ QtCharts::QChart *createOrderCountChart(const std::vector<Orders> &orders) {
     chart->setTheme(theme);
 
     auto axisX = new QtCharts::QDateTimeAxis;
-    axisX->setTickCount(std::min(static_cast<std::size_t>(2), data.size()));
+    axisX->setTickCount(std::max(static_cast<std::size_t>(2), data.size()));
     axisX->setFormat(ChartDialog::tr("yyyy.MM.dd"));
     axisX->setTitleText(ChartDialog::tr("Date"));
     chart->addAxis(axisX, Qt::AlignBottom);

@@ -37,17 +37,17 @@ namespace restaurant_server.test
         public async Task LoginRequestedAdmin_Successful()
         {
             _model
-                .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns((string user, string pass) =>
+                .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+                .Returns((string user, string pass, bool admin) =>
                     {
-                        if (user == "Admin" && pass == "adminpassword")
+                        if (user == "Admin" && pass == "adminpassword" && admin == true)
                         {
                             return Task.FromResult(LoginResult.Admin);
                         }
                         return Task.FromResult(LoginResult.Deny);
                     });
 
-            await _client.LoginRequested("Admin", "adminpassword", _tokenSource.Token);
+            await _client.LoginRequested("Admin", "adminpassword", true, _tokenSource.Token);
 
             _IClient
                 .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, _tokenSource.Token));
@@ -59,17 +59,17 @@ namespace restaurant_server.test
         public async Task LoginRequestedAdmin_WrongPassword()
         {
             _model
-               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-               .Returns((string user, string pass) =>
+               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+               .Returns((string user, string pass, bool admin) =>
                {
-                   if (user == "Admin" && pass == "adminpassword")
+                   if (user == "Admin" && pass == "adminpassword" && admin==true)
                    {
                        return Task.FromResult(LoginResult.Admin);
                    }
                    return Task.FromResult(LoginResult.Deny);
                });
 
-            await _client.LoginRequested("Admin", "cica", _tokenSource.Token);
+            await _client.LoginRequested("Admin", "cica", true, _tokenSource.Token);
 
             _IClient
                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));
@@ -81,17 +81,17 @@ namespace restaurant_server.test
         public async Task LoginRequestedAdmin_EmptyPassword()
         {
             _model
-               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-               .Returns((string user, string pass) =>
+               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+               .Returns((string user, string pass, bool admin) =>
                {
-                   if (user == "Admin" && pass == "adminpassword")
+                   if (user == "Admin" && pass == "adminpassword" && admin==true)
                    {
                        return Task.FromResult(LoginResult.Admin);
                    }
                    return Task.FromResult(LoginResult.Deny);
                });
 
-            await _client.LoginRequested("Admin", "", _tokenSource.Token);
+            await _client.LoginRequested("Admin", "",true,  _tokenSource.Token);
 
             _IClient
                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));
@@ -103,10 +103,10 @@ namespace restaurant_server.test
         public async Task LoginRequestedCustomer_Successful()
         {
             _model
-               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-               .Returns((string user, string pass) =>
+               .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+               .Returns((string user, string pass, bool admin) =>
                {
-                   if (user == "Table" && pass == "table")
+                   if (user == "Table" && pass == "table" && admin==false)
                    {
                        return Task.FromResult(LoginResult.Customer);
                    }
@@ -116,7 +116,7 @@ namespace restaurant_server.test
                 .Setup(c => c.GetLoggedInCustomers())
                 .Returns(new List<string> { });
 
-            await _client.LoginRequested("Table", "table", _tokenSource.Token);
+            await _client.LoginRequested("Table", "table",false, _tokenSource.Token);
 
             _IClient
                 .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, _tokenSource.Token));
@@ -129,10 +129,10 @@ namespace restaurant_server.test
         public async Task LoginRequestCustomers_Successful()
         {
             _model.
-                Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-               .Returns((string user, string pass) =>
+                Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+               .Returns((string user, string pass, bool admin) =>
                {
-                   if (user == "Table" && pass == "table" || user == "test" && pass == "test")
+                   if (user == "Table" && pass == "table" && admin==false|| user == "test" && pass == "test" && admin==false)
                    {
                        return Task.FromResult(LoginResult.Customer);
                    }
@@ -142,7 +142,7 @@ namespace restaurant_server.test
                 .Setup(c => c.GetLoggedInCustomers())
                 .Returns(new List<string> { "test" });
 
-            await _client.LoginRequested("Table", "table", _tokenSource.Token);
+            await _client.LoginRequested("Table", "table",false, _tokenSource.Token);
 
             _IClient
                 .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Ok }, _tokenSource.Token));
@@ -155,10 +155,10 @@ namespace restaurant_server.test
         public async Task LoginRequestedCustomers_LoggedInAlready()
         {
             _model.
-               Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-              .Returns((string user, string pass) =>
+               Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>() ))
+              .Returns((string user, string pass, bool admin) =>
               {
-                  if (user == "Table" && pass == "table" || user == "test" && pass == "test")
+                  if (user == "Table" && pass == "table" && admin==false || user == "test" && pass == "test" && admin==false)
                   {
                       return Task.FromResult(LoginResult.Customer);
                   }
@@ -168,7 +168,7 @@ namespace restaurant_server.test
                 .Setup(c => c.GetLoggedInCustomers())
                 .Returns(new List<string> { "Table" });
 
-            await _client.LoginRequested("Table", "table", _tokenSource.Token);
+            await _client.LoginRequested("Table", "table",false, _tokenSource.Token);
 
             _IClient
                 .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));
@@ -179,17 +179,17 @@ namespace restaurant_server.test
         public async Task LoginRequested_WrongUsername()
         {
             _model
-              .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-              .Returns((string user, string pass) =>
+              .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+              .Returns((string user, string pass, bool admin) =>
               {
-                  if (user == "Table" && pass == "tablepassword")
+                  if (user == "Table" && pass == "tablepassword" && admin==false)
                   {
                       return Task.FromResult(LoginResult.Customer);
                   }
                   return Task.FromResult(LoginResult.Deny);
               });
 
-            await _client.LoginRequested("Table_", "tablepassword", _tokenSource.Token);
+            await _client.LoginRequested("Table_", "tablepassword",false, _tokenSource.Token);
 
             _IClient
                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));
@@ -201,17 +201,17 @@ namespace restaurant_server.test
         public async Task LoginRequesteCustomer_EmptyPassword()
         {
             _model
-             .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>()))
-             .Returns((string user, string pass) =>
+             .Setup(m => m.Login(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+             .Returns((string user, string pass, bool admin) =>
              {
-                 if (user == "Table" && pass == "tablepassword")
+                 if (user == "Table" && pass == "tablepassword" && admin==false)
                  {
                      return Task.FromResult(LoginResult.Customer);
                  }
                  return Task.FromResult(LoginResult.Deny);
              });
 
-            await _client.LoginRequested("Table", "", _tokenSource.Token);
+            await _client.LoginRequested("Table", "",false,  _tokenSource.Token);
 
             _IClient
                .Verify(c => c.Send(new LoginReplyMessage { Status = LoginStatus.Error }, _tokenSource.Token));

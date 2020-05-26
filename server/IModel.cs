@@ -33,7 +33,7 @@ namespace restaurant_server
 
     public interface IModel
     {
-        Task<LoginResult> Login(string name, string password);
+        Task<LoginResult> Login(string name, string password, bool IsAdmin);
         Task<IEnumerable<Food>> ListFoods(bool visibleOnly);
         Task<OrderResult> AddOrder(string name, List<FoodAmount> orderedfood);
         Task<PayResult> TryPay(UInt64 orderId, string tableId);

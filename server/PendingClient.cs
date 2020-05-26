@@ -22,9 +22,9 @@ namespace restaurant_server
             IClient = client;
         }
 
-        public async Task LoginRequested(string name, string password, CancellationToken cancellation)
+        public async Task LoginRequested(string name, string password, bool isAdmin, CancellationToken cancellation)
         {
-            switch (await _model.Login(name, password))
+            switch (await _model.Login(name, password, isAdmin))
             {
                 case LoginResult.Customer:
                     if (_connectionHandler.GetLoggedInCustomers().Contains(name))

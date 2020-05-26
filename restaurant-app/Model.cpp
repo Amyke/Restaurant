@@ -67,7 +67,7 @@ void Model::login(const QString &username, const QString &password) {
         return;
     }
 
-    auto msg = QSharedPointer<LoginRequestMessage>::create(username.toStdString(), password.toStdString());
+    auto msg = QSharedPointer<LoginRequestMessage>::create(username.toStdString(), password.toStdString(), false);
 
     client->send(msg);
 }

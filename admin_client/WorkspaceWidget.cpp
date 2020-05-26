@@ -122,12 +122,12 @@ WorkspaceWidget::WorkspaceWidget(Model &model, QWidget *parent) : QSplitter(pare
 
     connect(&model, &Model::foodChangeFailed, this, [this] {
         QMessageBox::critical(this, tr("Food change error"),
-                              tr("The food change is failed, pls try again or ask help"));
+                              tr("The food change is failed, please try again or ask help"));
     });
 
     connect(&model, &Model::orderStatusChangeFailed, this, [this] {
         QMessageBox::critical(this, tr("Order Status error"),
-                              tr("The order status change is failed, pls try again or ask help"));
+                              tr("The order status change is failed, please try again or ask help"));
     });
 }
 
